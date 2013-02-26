@@ -3,7 +3,9 @@ Webglue - %%SYNOPSIS%%
 	  Release %%VERSION%%
 ...............................................................................
 
-** WARNING Webglue is unfinished and unereleased software ** 
+** WARNING
+** WARNING Webglue is unfinished and unreleased software (and may never be)
+** WARNING 
 
 Webglue is a command line tool to build static websites.
 
