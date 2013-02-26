@@ -3,6 +3,8 @@ Webglue - %%SYNOPSIS%%
 	  Release %%VERSION%%
 ...............................................................................
 
+** WARNING Webglue is unfinished and unereleased software ** 
+
 Webglue is a command line tool to build static websites.
 
 The website's URIs and their content are defined by maps. Maps are
