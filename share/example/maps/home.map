@@ -1,0 +1,13 @@
+(format w.xml)
+(uri (w.locale (en /) (fr (/acceuil))))
+(doc
+ (suffix .html)
+ (preamble "<!DOCTYPE html>")
+ (root 
+     (html (@ (lang w.locale)))
+   (head
+    (meta (@ (charset utf-8)))
+    (title Hello))
+   (body
+    (h1 Hello)
+    (p This is home.))))

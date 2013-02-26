@@ -1,0 +1,15 @@
+# The following variables respectively specify the directories to
+# install, the webglue binary, the webglue formats, support files and
+# man pages.
+# TODO use oasis
+
+INSTALLPREFIX=${INSTALLPREFIX:="/usr/local"}
+
+BINDIR=${BINDIR:="$INSTALLPREFIX/bin"}
+LIBDIR=${LIBDIR:="$INSTALLPREFIX/lib"}
+SHAREDIR=${SHAREDIR:="$INSTALLPREFIX/share"}
+MANDIR=${MANDIR:="$SHAREDIR/man"}
+
+# This variable specifies where the webglue API should be installed
+
+INSTALLMODULEDIR=${INSTALLAPIDIR:="`ocamlc -where`/webglue"}

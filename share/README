@@ -1,0 +1,45 @@
+
+
+ocamlbuild 
+
+The following targets are built. 
+
+ID.map -> ID.map.d      -- dependencies needed to define ID's key
+ID.map.d -> ID.map.od   -- build dependencies
+
+When we need a map's data we don't require the .map but the .map.od. This 
+ensure that it can be queried correctly with get (we have all the maps 
+included with w.includes). 
+
+ID.map.od -> ID.uriset.d    -- dependencies needed to defined ID's uriset
+ID.uriset.d -> ID.uriset.od -- build dependencies
+ID.uriset.od -> ID.uriset   -- build the uriset
+
+After ID.uriset.od is built the URI set of the map can be determined. We
+have all the dependencies needed to build the URI set.
+
+After the uri set is built we build each uri, via the following procedure
+
+ID.map.od -> ID+URI.uri.d     -- dependencies needed to define URI of ID. 
+ID+URI.uri.d -> ID+URI.uri.od -- build dependencies 
+ID+URI.uri.od -> ID+URI.uri   -- generate the URI content 
+
+The whole URI set of a map can be built with ID.uriset.o
+
+ID.uriset -> ID.uriset.o
+
+The URI set of a map and the URIs of the maps it depends on and 
+recursively can be build with as follows 
+
+ID.uriset.o -> ID.site -- build recursive dependencies. 
+
+
+
+Bugs
+----
+
+If you change a pathname it is not erased. 
+
+
+
+

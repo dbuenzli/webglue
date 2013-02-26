@@ -1,0 +1,3 @@
+<**/*.ml> : annot
+<**/*.map> : map_dir(maps)
+<maps/**> : include

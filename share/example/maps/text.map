@@ -1,0 +1,6 @@
+(format w.text)
+(uri /rawtext.txt)
+(contents
+ (Each list defines a line)
+ (Each token is separated by a space character)
+ (That's all.))

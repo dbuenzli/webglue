@@ -1,0 +1,63 @@
+(format w.map)
+
+;; Locales menus
+;; Here are a few patterns to define locale menus.
+
+; Partially bilingual site 
+;
+; If the other locale is defined for the page, the key locales holds a link
+; to it. Otherwise holds nothing. It's not an error not to define the other 
+; locale.
+
+(locale-other-name (w.locales (fr English) (en Français)))
+(locale-other-uri (w.opt-with-loc (w.locales (en fr) (fr en)) (w.get w.id uri)))
+(locales
+ (w.cond ((w.get locale-other-uri))
+	 (())         ; other locale undefined, do nothing (could gray out). 
+	 (w.default 
+	  (a (@ (href (w.get locale-other-uri))) (w.get locale-other-name))))
+
+; Completely bilingual site
+; 
+; Same as above but we want errors to be generated if the other locale
+; is undefined. Just replace w.loc-val-opt with w.loc-val. This also
+; simplifies locales since there's a single case to treat.
+
+(locale-other-name (w.locales (fr English) (en Français)))
+(locales
+ (a (@ (href (w.with-loc (w.locales (en fr) (fr en)) (w.get w.id uri))))
+    (w.get locale-other-name)))
+
+; Partially multilingual site. 
+; 
+; A list ordered by locale name such that. If the locale is another locale
+; and has a page, we link to it. If it has no page, we disable it. If it
+; the current locale we don't link but mark it.
+
+(locale-list en fr de)
+(locale-name (w.locales (en English) (fr Français) (de Deutsch)))
+(locale-uri (w.with-loc w.item (w.get w.id uri)))
+(locales 
+ (ul 
+  (w.list 
+   (values (w.get locale-list))
+   (sort-key (w.opt-with-loc w.item locale-name))
+   (item 
+    (w.cond ((w.get locale-uri))
+	    (()                                     ; no page for this locale
+	     (li (@ (class disabled)) (w.with-loc w.item locale-name)))
+	    (((w.get w.id uri))                     ; current locale 
+	     (li (@ (class self)) (w.with-loc w.item local-name)))
+	    (w.default                              ; other locale
+	     (li (a (@ (href (w.get locale-uri))) 
+		    (w.opt-with-loc w.item locale-name))))))))
+
+                        
+; Completely multilingual site
+;
+; In the example above replace w.opt-with-locale by w.with-loc in locale-uri.
+; The first condition case in item can be suppressed.
+
+
+
+
