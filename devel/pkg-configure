@@ -11,4 +11,4 @@ ECHO=${ECHO:="echo"}
 
 . $LOC/pkg.config
 
-$ECHO "let value = \"$1/webglue\"" > src/tool/libdir.ml ;;
+$ECHO "let value = \"$1/webglue\"" > src/tool/libdir.ml
