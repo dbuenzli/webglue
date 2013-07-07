@@ -13,6 +13,7 @@ action ()
       default)      $OCAMLBUILD webglue.native ;;
       tests)        $OCAMLBUILD test.native;;
       api-doc)      shift; devel/pkg-doc $* doc/api.docdir ;;
+      configure)    shift; devel/pkg-configure $* ;;
       distrib)      devel/pkg-distrib ;;
       publish)      devel/pkg-www-release ;;
       publish-opam) devel/pkg-opam ;;

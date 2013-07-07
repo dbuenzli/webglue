@@ -3,8 +3,6 @@
 ## Usage: pkg-opam-git
 ## Prepare build system for an opam git package.
 
-OASIS=${OASIS:="oasis"}
-
 set -e
 LOC=`dirname $0`
 

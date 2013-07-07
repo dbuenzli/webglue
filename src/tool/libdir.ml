@@ -1,1 +1,1 @@
-let value = "/usr/local/lib/webglue"
+let value = "%%WEBGLUELIBDIR%%"
