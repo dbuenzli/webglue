@@ -1,7 +1,7 @@
 (*---------------------------------------------------------------------------
    Copyright 2011 Daniel C. Bünzli. All rights reserved.
    Distributed under a BSD license, see license at the end of the file.
-   %%PROJECTNAME%% version %%VERSION%%
+   %%NAME%% release %%VERSION%%
   ---------------------------------------------------------------------------*)
 
 let str = Printf.sprintf 
