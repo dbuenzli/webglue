@@ -16,8 +16,12 @@ let doc = "%%SYNOPSIS%%"
 let man = [ 
   `S "DESCRIPTION";
   `P "$(b,webglue) builds static websites from map files.";
-  `P "Use 'webglue help maps' for information about map files."; `Noblank;
-  `P "Use 'webglue help directives' for information about directives.";`Noblank;
+  `P "Use 'webglue help maps' for information about map files."; 
+  `Noblank;
+  `P "Use 'webglue help directives' for information about directives.";
+  `Noblank;
+  `P "Use 'webglue help topics' for a list of help topics.";
+  `Noblank;
   `P "Use 'webglue help $(i,COMMAND)' for information about $(i,COMMAND).";
    ] @ C.copts_man @ [ 
   `S "ENVIRONMENT";
