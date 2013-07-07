@@ -1,8 +1,5 @@
-<**/*.{ml,mli}> : annot, debug, \
-                  package(dynlink), package(unix), \
-                  package(cmdliner), package(uuidm)
-<api> : include
-<tool> : include
-<formats> : include
-<tool/webglue.{native,byte}> : package(dynlink), package(unix), \
-                             package(cmdliner), package(uuidm)
+true: package(dynlink), package(unix), package(cmdliner), package(uuidm)
+<**/*.{ml,mli}> : annot
+<src/api> : include
+<src/tool> : include
+<src/formats> : include

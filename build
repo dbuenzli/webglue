@@ -1,167 +1,26 @@
 #!/bin/sh
+# This script is only used for developement. It is removed by the 
+# distribution process. 
+
 set -e
-. ./config
 
-# Project info
-PROJECTNAME="webglue"
-VERSION="0.6.0"
-COPYRIGHTYEAR="2011"
-SYNOPSIS="A command line tool to build static websites"
-EMAIL="daniel.buenzl i\\\@erratique.ch"
-
-TOPICS="content.1 diagnose.1 get.1 help.1 show.1 set.1 uriset.1 \
-        formats.5 maps.5 s-expressions.5 \
-        @-text.7 directives.7 standard-uris.7"
-B="_build"
-BWEBGLUE="$B/tool/webglue"
-BWG="$B/api/wg"
-
-# Caml tools
-OCAMLDOC=${OCAMLDOC:="ocamldoc"}
-OCAMLBUILD=${OCAMLBUILD:="ocamlbuild"}
-OCAMLC=${OCAMLC:="ocamlc"}
-
-BUILDFLAGS=${BUILDFLAGS:="-use-ocamlfind -classic-display \
-                          -X share"}
-
-# Misc tools needed for install
-ECHO=${ECHO="echo"}
-CUT=${CUT="cut"}
-BASENAME=${BASENAME="basename"}
-CP=${CP:="cp"}
-RM=${RM:="rm"}
-MKDIR=${MKDIR:="mkdir"}
-
-ocb () { $OCAMLBUILD $BUILDFLAGS "$@" ; }
+OCAMLBUILD=${OCAMLBUILD:="ocamlbuild -classic-display -use-ocamlfind"}
 
 action () 
 {
-  case $1 in
-    api-byte) ocb wg.cmo ;;
-    api-native) ocb wg.cmx ;;
-    api-plugin) ocb wg.cmxs ;;
-    install-api-byte)
-      $ECHO "Installing API in $INSTALLAPIDIR";
-      $MKDIR -p $INSTALLAPIDIR
-      $CP $BWG.ml $BWG.mli $BWG.cmi $BWG.cmo api/META $INSTALLAPIDIR ;;
-    install-api)
-      action install-api-byte
-      $CP $BWG.cmx $BWG.o $INSTALLAPIDIR ;;
-    install-api-plugin)
-      action install-api
-      $CP $BWG.cmxs $INSTALLAPIDIR ;;
-    doc)
-      ocb -ocamldoc "ocamldoc -colorize-code -I $CMDLINERDIR" -no-links \
-      doc/doc.docdir/index.html
-      $CP doc/style.css _build/doc/doc.docdir/style.css ;;
-    libdir) echo "let value = \"$LIBDIR/webglue\"" > tool/libdir.ml ;;
-    do-man)
-      $MKDIR -p $B/man
-      $BWEBGLUE --help=groff > $B/man/webglue.1
-      for t in $TOPICS
-      do 
-	  T=`$ECHO $t | $CUT -f1 -d.`
-	  TN=`$ECHO $t | $CUT -f2 -d.`
-	  $BWEBGLUE help --format=groff $T > $B/man/webglue-$T.$TN
-      done
-      for fmt in $B/formats/*.ml
-      do
-	  F=w.`$BASENAME $fmt | $CUT -f1 -d. | $CUT -f2 -d_`
-	  WEBGLUE_FORMAT_PATH="$B/formats" $BWEBGLUE help --format=groff $F > \
-	  $B/man/$F.5
-      done ;;
-    webglue.*) ocb $1 ;;
-    do-webglue)
-      action libdir
-      action webglue.$SUFF
-      $CP $BWEBGLUE.$SUFF $BWEBGLUE
-      ocb formats-$SUFF.otarget
-      if [ $SUFF = "byte" ] ; then 
-          # ocamlbuild brings too much deps in the .cmas, fix that.
-	  for fmt in $B/formats/*.cmo
-	  do $OCAMLC -a $fmt -o `$ECHO $fmt | $CUT -f1 -d.`.cma 
-	  done
-      fi
-      action do-man ;;
-    webglue-byte) SUFF=byte; action do-webglue ;;
-    webglue) SUFF=native; action do-webglue ;;
-    do-install)
-      $ECHO "Installing webglue in $BINDIR"
-      $MKDIR -p $BINDIR
-      $CP $BWEBGLUE $BINDIR/webglue
-      $ECHO "Installing map formats in $LIBDIR/webglue"
-      $MKDIR -P $LIBDIR/webglue 
-      $CP $B/formats/*$PSUFF $LIBDIR/webglue/
-      $ECHO "Installing manuals in $MANDIR"
-      $MKDIR -p $MANDIR/man1
-      $MKDIR -p $MANDIR/man5
-      $MKDIR -p $MANDIR/man7
-      $CP $B/man/*.1 $MANDIR/man1/
-      $CP $B/man/*.5 $MANDIR/man5/
-      $CP $B/man/*.7 $MANDIR/man7/
-      $ECHO "Installing support files in $SHAREDIR/webglue"
-      $MKDIR -p $SHAREDIR/webglue
-      $CP share/* $SHAREDIR/webglue
-      $CP README $SHAREDIR/webglue
-      $CP -R doc $SHAREDIR/webglue/doc;;
-    install-byte) PSUFF=.cma; action do-install ;;
-    install) PSUFF=.cmxs; action do-install ;;
-    config)
-      echo "The webglue command line tool will be installed in $BINDIR"
-      echo "The webglue map formats will be installed in $LIBDIR/webglue"
-      echo "The webglue support files will be installed in $SHAREDIR/webglue"
-      echo "The webglue manuals will be installed in $MANDIR"
-      echo "The webglue API will be installed in $INSTALLAPIDIR" ;;
-    distrib) distrib ;;
-    clean) ocb -clean ;;
-    *) ocb $1 ;;
-  esac;
+    case $1 in
+      default)      $OCAMLBUILD webglue.native ;;
+      tests)        $OCAMLBUILD test.native;;
+      api-doc)      shift; devel/pkg-doc $* doc/api.docdir ;;
+      distrib)      devel/pkg-distrib ;;
+      publish)      devel/pkg-www-release ;;
+      publish-opam) devel/pkg-opam ;;
+      clean)        $OCAMLBUILD -clean ;;
+      jsoo)         shift; devel/jsoo-build $* ;;
+      *)            $OCAMLBUILD $* ;;
+    esac
 } 
 
-distrib ()
-{
-  CD=${CD:="cd"}
-  FIND=${FIND:="find"}
-  GREP=${GREP:="grep"}
-  TAR=${TAR:="tar"}
-  SED=${SED:="sed"}
-  MV=${MV:="mv"}
-
-  DIRNAME=$PROJECTNAME-$VERSION
-  ROOTDIR=/tmp/$DIRNAME
-  $RM -rf $ROOTDIR
-  $MKDIR -p $ROOTDIR
-  $CP -P -R . $ROOTDIR
-  $CD $ROOTDIR
-  action clean
-
-  $RM -f TODO
-  $RM -rf .git
-  $FIND $ROOTDIR \
-    \( -name "*~" -o -name ".DS_Store" -o -name ".gdb_history" \) \
-    -exec $RM {} ';'
-  for file in `$FIND $ROOTDIR -type f -not -name "build" -print`; do
-    $SED      "s/%%VERSION%%/$VERSION/; \
-               s/%%COPYRIGHTYEAR%%/$COPYRIGHTYEAR/; \
-               s/%%SYNOPSIS%%/$SYNOPSIS/; \
-               s/%%PROJECTNAME%%/$PROJECTNAME/; \
-               s/%%EMAIL%%/$EMAIL/;" \
-	$file > $file.tmp
-    $MV -f $file.tmp $file
-  done
-
-  action webglue
-  $MV -f doc/doc-distrib.odocl doc/doc.odocl
-  action doc
-  $CP -R $B/doc/doc.docdir doc/api
-  $RM -f doc/style.css
-  action clean
-
-  $CD ..
-  $TAR -cvjf $DIRNAME.tbz $DIRNAME
-  $RM -r $DIRNAME
-}
-
-if [ $# -eq 0 ]; then action webglue ; else
-  while [ $# -gt 0 ]; do action $1; shift ; done
-fi
+if [ $# -eq 0 ]; 
+then action default ; 
+else action $*; fi

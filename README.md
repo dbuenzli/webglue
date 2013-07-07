@@ -1,11 +1,6 @@
-...............................................................................
-Webglue - %%SYNOPSIS%%
-	  Release %%VERSION%%
-...............................................................................
-
-** WARNING
-** WARNING Webglue is unfinished and unreleased software (and may never be)
-** WARNING 
+Webglue - Build static websites
+-------------------------------------------------------------------------------
+Release %%VERSION%%
 
 Webglue is a command line tool to build static websites.
 
@@ -22,53 +17,19 @@ via the webglue API.
 
 Webglue is distributed under the BSD3 license.
 
-Project home page : http://erratique.ch/software/webglue
-Contact: daniel.buenzl i@erratique.ch  
+Project home page : http://erratique.ch/repo/webglue  
+Contact: Daniel Bünzli `<daniel.buenzl i@erratique.ch>`
 
-= Installation
+## Installation
 
-TODO use oasis.
+Webglue can be installed with `opam`
 
-Webglue needs at least OCaml 3.12.0 on a platform that supports
-dynamic linking and the Unix library. It also needs Uuidm and Cmdliner
-which are available at:
-
-http://erratique.ch/software/uuidm
-http://erratique.ch/software/cmdliner
-
-The location of the final installation and the location of Uuidm and
-Cmdliner's build can be adjusted by editing the `config' file at the
-root of the distribution. The values of these variables can be checked
-by running :
-
-> ./build config 
-
-These variables can also be set directly from the shell when you
-invoke the script. For example :
-
-> INSTALLPREFIX=/opt/ ./build config
-
-Once you have adjusted the variables, type :
-
-> ./build 
-> ./build install
-
-If you want to develop your own map formats, you must also install the
-webglue api:
-
-> ./build install-api
-
-This will install the library in the $INSTALLAPIDIR directory (defaults 
-to `ocamlc -where`/webglue).
-
-If your platform supports only byte code, issue the following commands:
-
-> ./build webglue-byte
-> ./build install-byte
-> ./build install-api-byte
+    opam add erratique-u http://erratique.ch/software/opam/unreleased
+    opam update
+    opam install webglue
 
 
-= Getting started
+## Getting started
 
 The webglue command line tool and formats are largely self-documented
 in the built-in help system (this information is also available as man
@@ -93,7 +54,7 @@ map files and an ocamlbuild plugin for that handles the incremental
 construction of a website with ocamlbuild and webglue.
 
 
-= Bugs and ideas
+## Bugs and ideas
 
 The following could be implemented in future versions of webglue.
 Comments and suggestion are welcome, send them to <%%EMAIL%%>.
@@ -127,4 +88,5 @@ Comments and suggestion are welcome, send them to <%%EMAIL%%>.
 
 * Finer dependency tracking, experimental implementation seems to indicate
   that this is overkill.
-  
+
+* Link checker format. E.g. see in erratique website the link.map
