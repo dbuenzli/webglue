@@ -1,5 +1,5 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) %%COPYRIGHTYEAR%%, Daniel C. Bünzli. All rights reserved.
+   Copyright 2011 Daniel C. Bünzli. All rights reserved.
    Distributed under a BSD license, see license at the end of the file.
    %%PROJECTNAME%% version %%VERSION%%
   ---------------------------------------------------------------------------*)
@@ -42,7 +42,7 @@ let cmd =
   Term.(pure uriset $ C.context ~locale_opt:false $ C.output $ out_kind), info
 
 (*---------------------------------------------------------------------------
-   Copyright (c) %%COPYRIGHTYEAR%%, Daniel C. Bünzli
+   Copyright 2011 Daniel C. Bünzli.
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without

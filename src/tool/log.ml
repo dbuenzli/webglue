@@ -1,5 +1,5 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) %%COPYRIGHTYEAR%%, Daniel C. Bünzli. All rights reserved.
+   Copyright 2011 Daniel C. Bünzli. All rights reserved.
    Distributed under a BSD license, see license at the end of the file.
    %%PROJECTNAME%% version %%VERSION%%
   ---------------------------------------------------------------------------*)
@@ -114,7 +114,7 @@ let reporter verbosity ppf level (entry : Wlog.entry) =
       pp_main_loc main_loc pp_level level pp_entry entry
 
 (*---------------------------------------------------------------------------
-   Copyright (c) %%COPYRIGHTYEAR%%, Daniel C. Bünzli
+   Copyright 2011 Daniel C. Bünzli.
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without

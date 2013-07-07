@@ -1,5 +1,5 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) %%COPYRIGHTYEAR%%, Daniel C. Bünzli. All rights reserved.
+   Copyright 2011 Daniel C. Bünzli. All rights reserved.
    Distributed under a BSD license, see license at the end of the file.
    %%PROJECTNAME%% version %%VERSION%%
   ---------------------------------------------------------------------------*)
@@ -350,7 +350,7 @@ let add_utf16be b u = utf16be_encode (byte_writer_of_buffer b) u
 let add_utf16le b u = utf16le_encode (byte_writer_of_buffer b) u
   
 (*---------------------------------------------------------------------------
-   Copyright (c) %%COPYRIGHTYEAR%%, Daniel C. Bünzli
+   Copyright 2011 Daniel C. Bünzli.
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
