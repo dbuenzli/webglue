@@ -9,10 +9,8 @@ LOC=`dirname $0`
 SED=${SED="sed"}
 
 VARSUBSTS="s|%%NAME%%|$NAME|g; \
-           s|%%MODNAME%%|$MODNAME|g; \
            s|%%VERSION%%|$VERSION|g; \
            s|%%SYNOPSIS%%|$SYNOPSIS|g; \
-           s|%%DESCRIPTION%%|$DESCRIPTION |g; \
            s|%%HOMEPAGE%%|$HOMEPAGE|g; \
            s|%%MAINTAINER%%|$MAINTAINER|g; \
            s|%%AUTHORS%%|$AUTHORS|g; \

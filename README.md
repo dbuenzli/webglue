@@ -1,4 +1,4 @@
-Webglue - Build static websites
+Webglue - Command line tool to build static websites
 -------------------------------------------------------------------------------
 Release %%VERSION%%
 

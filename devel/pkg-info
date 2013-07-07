@@ -10,23 +10,8 @@ LOC=`dirname $0`
 ECHO=${ECHO:="echo"}
 SED=${SED:="sed"}
 TR=${TR:="tr"}
-OASISQ=${OASISQ:="oasis query"}
 
-VERSION=`$ECHO "\`git describe master\`" | $SED "s/^.\(.*\)/\1/"`
-NAME=`$OASISQ Name`
-MODNAME=`$OASISQ Library\("$NAME"\).Modules`
-SYNOPSIS=`$OASISQ Synopsis`
-RAWDESCRIPTION=`$OASISQ Description`
-DESCRIPTION=`$OASISQ Description | $SED "s|$|\\\\\|"`
-HOMEPAGE=`$OASISQ Homepage`
-MAINTAINER=`$OASISQ Maintainers`
-AUTHORS=`$OASISQ Authors`
-OCAMLVERSION=`$OASISQ OCamlVersion`
-DEPS=`$OASISQ "Library(\"$NAME\").BuildDepends"`
-GITREPO=`$OASISQ "SrcRepo(head).Location"`
-if [ "$DEPS" ]; then
- PPDEPS=`$ECHO ", $DEPS"| $SED "s|,|,   |g" | $TR "," "\n" | $SED "s|$|\\\\\|"`
-fi
+. $LOC/pkg.config
 
 PKGDIR=$NAME-$VERSION
 WWWROOT=${WWWROOT:="$HOME/sync/erratique"}
