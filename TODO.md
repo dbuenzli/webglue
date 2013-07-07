@@ -68,10 +68,6 @@
 ** Devise a better strategy for modification times. 
    stat doesn't work when build system because of cp. 
 
-
-* myocamlbuild.ml
-** why without <**/*.ml> : map_dir (maps) it doesn't work ? 
-
 * Formats
 ** Format to compute css scales. 
 

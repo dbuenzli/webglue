@@ -4,7 +4,8 @@
 
 set -e
 
-OCAMLBUILD=${OCAMLBUILD:="ocamlbuild -classic-display -use-ocamlfind"}
+OCAMLBUILD=${OCAMLBUILD:="ocamlbuild -tag debug -classic-display \
+                          -use-ocamlfind"}
 
 action () 
 {
@@ -16,7 +17,6 @@ action ()
       publish)      devel/pkg-www-release ;;
       publish-opam) devel/pkg-opam ;;
       clean)        $OCAMLBUILD -clean ;;
-      jsoo)         shift; devel/jsoo-build $* ;;
       *)            $OCAMLBUILD $* ;;
     esac
 } 

@@ -1,4 +1,4 @@
-Webglue - Command line tool to build static websites
+Webglue — Command line tool to build static websites
 -------------------------------------------------------------------------------
 Release %%VERSION%%
 
@@ -19,8 +19,11 @@ Webglue is distributed under the BSD3 license.
 
 Project home page : http://erratique.ch/repo/webglue  
 Contact: Daniel Bünzli `<daniel.buenzl i@erratique.ch>`
+Dogfooding: http://erratique.ch
 
 ## Installation
+
+** Warning ** webglue is an experiment, it is unsupported software.
 
 Webglue can be installed with `opam`
 
@@ -32,32 +35,23 @@ Webglue can be installed with `opam`
 ## Getting started
 
 The webglue command line tool and formats are largely self-documented
-in the built-in help system (this information is also available as man
-pages). Type :
+in the built-in help system. Type :
 
-> webglue 
+    webglue 
 
-To get help pointers.
+to get help pointers.
 
-The share directory 
-
-The doc/ directory has the documentation of the API. This is
-installed in the share directory.
-
-The support/ directory has a few lines you can add to your .emacs to
-edit map files and an ocamlbuild plugin that handles the incremental
-construction of a website with ocamlbuild and webglue. This is installed
-in the shared directory.
-
-The share directory of the distribution contains an emacs mode to edit
-map files and an ocamlbuild plugin for that handles the incremental
-construction of a website with ocamlbuild and webglue.
+The `share` directory of the distribution contains an emacs mode to
+edit map files and an ocamlbuild plugin for that handles the
+incremental construction of a website with ocamlbuild and webglue. The
+`doc` directory has the documentation of the API to define new map
+formats.
 
 
 ## Bugs and ideas
 
 The following could be implemented in future versions of webglue.
-Comments and suggestion are welcome, send them to <%%EMAIL%%>.
+Comments and suggestion are welcome.
 
 * All UTF-8 output should be normalized for the web (i.e. NFC).
   http://www.w3.org/TR/charmod-norm/
