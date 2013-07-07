@@ -10,5 +10,22 @@ LOC=`dirname $0`
 
 I="webglue.install"
 
-echo "bin: [ \"_build/src/tool/webglue.native\" { \"webglue\" } ]" >> $I
+## TODO be more smart...
 
+$CAT > $I <<EOF
+bin: [ "_build/src/tool/webglue.native" { "webglue" } ]
+lib: [ "src/api/META"
+       "_build/src/api/wg.mli"
+       "_build/src/api/wg.cmi"
+       "_build/src/api/wg.cma"
+       "_build/src/api/wg.cmx"
+       "_build/src/api/wg.cmxa"
+       "_build/src/api/wg.cmxs"
+       "_build/src/formats/w_css.cmxs"
+       "_build/src/formats/w_text.cmxs"
+       "_build/src/formats/w_files.cmxs"
+       "_build/src/formats/w_timestamp.cmxs"
+       "_build/src/formats/w_sitemap.cmxs"    
+       "_build/src/formats/w_xml.cmxs" ]
+doc: [ "README.md" "CHANGES.md" ]
+EOF

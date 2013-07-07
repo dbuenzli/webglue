@@ -10,6 +10,7 @@ LOC=`dirname $0`
 ECHO=${ECHO:="echo"}
 SED=${SED:="sed"}
 TR=${TR:="tr"}
+CAT=${CAT:="cat"}
 
 . $LOC/pkg.config
 
