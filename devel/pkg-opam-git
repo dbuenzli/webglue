@@ -9,7 +9,6 @@ LOC=`dirname $0`
 . $LOC/pkg-info
 
 # Substitute a few things
-ROOTDIR=.
 . $LOC/pkg-varsubsts
 
 # Remove dev artefacts
@@ -22,4 +21,3 @@ fi
 if [ -f $LOC/pkg-oasis-hook ]; then
     . $LOC/pkg-oasis-hook
 fi
-

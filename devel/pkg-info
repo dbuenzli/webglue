@@ -7,12 +7,12 @@
 set -e
 LOC=`dirname $0`
 
+. $LOC/pkg.config
+
 ECHO=${ECHO:="echo"}
 SED=${SED:="sed"}
 TR=${TR:="tr"}
 CAT=${CAT:="cat"}
-
-. $LOC/pkg.config
 
 PKGDIR=$NAME-$VERSION
 WWWROOT=${WWWROOT:="$HOME/sync/erratique"}
@@ -21,7 +21,7 @@ OPAMWWWROOT=${OPAMWWWROOT:="$WWWROOT/maps/opam"}
 
 BUILDDIR=${BUILDDIR:="_build"}
 CLONEDIR=${CLONEDIR:="/tmp/$PKGDIR"}
-DEV_BUILD_ARTEFACTS=""
+DEV_BUILD_ARTEFACTS=${DEV_BUILD_ARTEFACTS:=""}
 
 if [ -f $LOC/pkg-info-hook ]; then
     . $LOC/pkg-info-hook
