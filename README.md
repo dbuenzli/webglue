@@ -18,12 +18,12 @@ via the webglue API.
 Webglue is distributed under the BSD3 license.
 
 Project home page : http://erratique.ch/repo/webglue  
-Contact: Daniel Bünzli `<daniel.buenzl i@erratique.ch>`
+Contact: Daniel Bünzli `<daniel.buenzl i@erratique.ch>`  
 Dogfooding: http://erratique.ch
 
 ## Installation
 
-** Warning ** webglue is an experiment, it is unsupported software.
+**Warning** webglue is an experiment, it is unsupported software.
 
 Webglue can be installed with `opam`
 
