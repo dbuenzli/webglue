@@ -13,11 +13,9 @@ action ()
       default)      $OCAMLBUILD webglue.native ;;
       tests)        $OCAMLBUILD test.native ;;
       formats)      $OCAMLBUILD formats-native.otarget ;;
-      api-doc)      shift; devel/pkg-doc $* doc/api.docdir ;;
-      configure)    shift; devel/pkg-configure $* ;;
+      api-doc)      shift; pkg/pkg-doc $* doc/api.docdir ;;
+      configure)    shift; pkg/configure $* ;;
       distrib)      devel/pkg-distrib ;;
-      publish)      devel/pkg-www-release ;;
-      publish-opam) devel/pkg-opam ;;
       clean)        $OCAMLBUILD -clean ;;
       *)            $OCAMLBUILD $* ;;
     esac

@@ -1,0 +1,12 @@
+opam-version: "1"
+maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
+homepage: "http://erratique.ch/repo/webglue"
+authors: ["Daniel Bünzli <daniel.buenzl i@erratique.ch>"]
+license: "BSD3"
+ocaml-version: [>= "4.00.0"]
+depends: [ "ocamlfind" "cmdliner" "uuidm" ]
+build: [
+  [ "pkg/pkg-git" ]
+  [ "pkg/configure" lib ]
+  [ "pkg/build" "true" ]
+]

@@ -1,5 +1,5 @@
 version = "%%VERSION%%"
-description = "The webglue API"
+description = "The webglue plugin API"
 archive(byte) = "wg.cmo"
 archive(native) = "wg.cmx"
 archive(plugin,native) = "wg.cmxs"

@@ -1,0 +1,31 @@
+#!/bin/sh
+
+## Usage: build has_native 
+
+set -e
+LOC=`dirname $0`
+
+. $LOC/pkg-builder
+
+NATIVE=$1
+
+add lib src/api/wg.mli
+add lib src/api/wg.cmi
+add lib src/api/wg.cmx
+add lib src/api/wg.cmxa
+add lib src/api/wg.cmxs
+
+add lib src/formats/w_css.cmxs
+add lib src/formats/w_text.cmxs
+add lib src/formats/w_files.cmxs
+add lib src/formats/w_timestamp.cmxs
+add lib src/formats/w_sitemap.cmxs
+add lib src/formats/w_xml.cmxs
+
+add bin src/tool/webglue webglue
+
+add doc README.md 
+add doc CHANGES.md
+
+build 
+install webglue

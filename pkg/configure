@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Usage: pkg-configure LIBDIR 
+# Usage: configure LIBDIR 
 # Configures the package LIBDIR should be the location of format
 # plugin installs.
 
@@ -9,6 +9,6 @@ LOC=`dirname $0`
 
 ECHO=${ECHO:="echo"}
 
-. $LOC/pkg.config
+. $LOC/config
 
 $ECHO "let value = \"$1/webglue\"" > src/tool/libdir.ml

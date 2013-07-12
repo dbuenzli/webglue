@@ -1,0 +1,3 @@
+VERSION=`git describe master | sed "s/^.//"`
+NAME=webglue
+MAINTAINER="Daniel Bünzli <daniel.buenzl i\\\@erratique.ch>"
