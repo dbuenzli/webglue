@@ -9,7 +9,7 @@ LOC=`dirname $0`
 
 NATIVE=$1
 
-add lib src/api/META
+add lib pkg/META
 add lib src/api/wg.mli
 add lib src/api/wg.cmi
 add lib src/api/wg.cmx
