@@ -12,7 +12,7 @@ let cmds = [
   Curiset.cmd; ]
 
 let version = "%%VERSION%%"
-let doc = "%%SYNOPSIS%%"
+let doc = "Command line tool to build static websites"
 let man = [ 
   `S "DESCRIPTION";
   `P "$(b,webglue) builds static websites from map files.";
@@ -33,7 +33,7 @@ let man = [
       "A colon-separated list of directories that are recursively looked
        up for format definitions.");
   `S "BUGS AND FEEDBACK";
-  `P "Email them to <%%EMAIL%%>.";
+  `P "Email them to <%%MAINTAINER%%>.";
   `S "AUTHOR";
   `P "Written by Daniel C. Buenzli, $(i,http://erratique.ch).";
   `S "WARNING";
