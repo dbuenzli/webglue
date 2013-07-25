@@ -45,7 +45,7 @@ man ()
 {
     WEBGLUE_FORMAT_PATH=$B/src/formats \
     $B/src/tool/webglue.$SUFF help --man-format=groff $1 > $B/$2.$3
-    add man "$2.$3" "man$3"
+    add man "$2.$3" "man$3/$2.$3"
 }
 
 man "" "webglue" 1
