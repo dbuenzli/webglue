@@ -8,11 +8,21 @@ B="_build"
 
 LIBS=""; ILIBS=""
 BINS=""; IBINS=""
+TOPS=""; ITOPS=""
+SHRS=""; ISHRS=""
 DOCS=""; IDOCS=""
+MISC=""; IMISC=""
+STUBS=""; ISTUBS=""
+MANS=""; IMANS=""
 
 add_lib () { LIBS="$LIBS $1"; ILIBS="$ILIBS \"$B/$1\""; }
 add_bin () { BINS="$BINS $1"; IBINS="$IBINS \"$B/$1\" {\"$2\"}"; }
+add_toplevel () { TOPS="$TOPS $1"; ITOPS="$ITOPS \"$B/$1\" {\"$2\"}"; }
+add_share () { SHRS="$SHRS $1"; ISHRS="$ISHRS \"$B/$1\""; }
 add_doc () { DOCS="$DOCS $1"; IDOCS="$IDOCS \"$B/$1\""; }
+add_misc () { MISC="$MISC $1"; IMISC="$IMISC \"$B/$1\" {\"$2\"}"; }
+add_stublibs () { STUBS="$STUBS $1"; ISTUBS="$ISTUBS \"$B/$1\""; }
+add_man () { STUBS="$MANS $1"; IMANS="$IMANS \"$B/$1\" {\"$2\"}"; }
 add ()
 {
     case $1 in
@@ -33,18 +43,26 @@ add ()
                 add_bin "$2.byte" $2
             fi
             ;;
-        doc)
-            add_doc $2
-            ;;
+        toplevel) add_top $2.top $3 ;; 
+        doc) add_doc $2 ;;
+        misc) add_misc $2 $3 ;;
+        stublibs) add_stublibs $2 ;;
+        man) add_man $2 $3 ;;
     esac
 }
 
-build () { $OCAMLBUILD $LIBS $BINS $DOCS; }
+build () { $OCAMLBUILD $LIBS $BINS $DOCS $TOPS $SHRS $MISC $STUBS $MANS; }
 install ()
 {
     cat > $1.install <<EOF 
-bin: [ $IBINS ]
+opam-version: "1"
 lib: [ $ILIBS ]
+bin: [ $IBINS ]
+toplevel: [ $ITOPS ]
+share: [ $SHRS ]
 doc: [ $IDOCS ]
+misc: [ $MISC ]
+stublibs: [ $STUBS ]
+man: [ $MANS ]
 EOF
 }
