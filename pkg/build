@@ -23,10 +23,53 @@ add lib src/formats/w_timestamp.cmxs
 add lib src/formats/w_sitemap.cmxs
 add lib src/formats/w_xml.cmxs
 
-add bin src/tool/webglue webglue
+add bin src/tool/webglue
 
 add doc README.md 
 add doc CHANGES.md
 
+add share share/dotemacs
+add share share/example/home.map         example/home.map
+add share share/example/locale-menus.map example/locale-menus.map
+add share share/example/text.map         example/text.map
+
 build 
+
+if [ "$NATIVE" == "true" ]; then 
+    SUFF="native"
+else
+    SUFF="byte"
+fi
+
+man ()
+{
+    WEBGLUE_FORMAT_PATH=$B/src/formats \
+    $B/src/tool/webglue.$SUFF help --man-format=groff $1 > $B/$2.$3
+    add man "$2.$3" "man$3"
+}
+
+man "" "webglue" 1
+
+man "content" "webglue-content" 1
+man "diagnose" "webglue-diagnose" 1
+man "get" "webglue-get" 1
+man "help" "webglue-help" 1
+man "set" "webglue-set" 1
+man "show" "webglue-show" 1
+man "uriset" "webglue-uriset" 1
+
+man "@-text" "webglue-@-text" 7
+man "directives" "webglue-directives" 7
+man "formats" "webglue-formats" 5
+man "s-expressions" "webglue-s-expressions" 5
+man "standard-uris" "webglue-standard-uris" 7
+
+man "w.css" "w.css" 5
+man "w.files" "w.files" 5
+man "w.map" "w.map" 5
+man "w.sitemap" "w.sitemap" 5
+man "w.text" "w.text" 5
+man "w.timestamp" "w.timestamp" 5
+man "w.xml" "w.xml" 5
+
 install webglue
