@@ -36,7 +36,7 @@ add share share/example/text.map         example/text.map
 
 build 
 
-if [ "$NATIVE" == "true" ]; then 
+if [ "$NATIVE" = "true" ]; then 
     SUFF="native"
 else
     SUFF="byte"

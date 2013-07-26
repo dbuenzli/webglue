@@ -17,7 +17,7 @@ via the webglue API.
 
 Webglue is distributed under the BSD3 license.
 
-Project home page : http://erratique.ch/repo/webglue  
+Home page: http://erratique.ch/repo/webglue  
 Contact: Daniel Bünzli `<daniel.buenzl i@erratique.ch>`  
 Dogfooding: http://erratique.ch
 
