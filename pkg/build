@@ -13,6 +13,7 @@ add lib pkg/META
 add lib src/api/wg.mli
 add lib src/api/wg.cmi
 add lib src/api/wg.cmx
+add lib src/api/wg.a
 add lib src/api/wg.cmxa
 add lib src/api/wg.cmxs
 
