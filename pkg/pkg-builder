@@ -28,10 +28,9 @@ add_man ()      { MANS="$MANS $1"; IMANS="$IMANS$NL  \"$B/$1\" {\"$2\"}"; }
 add ()
 {
     SRC=$2
-    if [ "$3" == "" ]; then 
-        DST=`basename $2`
-    else
-        DST=$3
+    DST=$3
+    if [ "$DST" == "" ]; then 
+        DST=`basename $SRC`
     fi
     case $1 in
         lib)
@@ -46,9 +45,9 @@ add ()
             ;;
         bin)
             if [ "$NATIVE" == "true" ]; then 
-                add_bin "$SRC.native" $DST
+                add_bin $SRC.native $DST
             else
-                add_bin "$SRC.byte" $DST
+                add_bin $SRC.byte $DST
             fi
             ;;
         share)    add_share $SRC $DST ;;
@@ -60,7 +59,7 @@ add ()
     esac
 }
 
-build () { $OCAMLBUILD $LIBS $BINS $DOCS $TOPS $SHRS $MISC $STUBS $MANS; }
+build () { $OCAMLBUILD $LIBS $BINS $DOCS $TOPS $SHRS $MISC $STBS $MANS; }
 install ()
 {
     cat > $1.install <<EOF 
