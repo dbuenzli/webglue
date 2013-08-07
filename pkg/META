@@ -1,5 +1,6 @@
 version = "%%VERSION%%"
 description = "The webglue plugin API"
+requires = "uuidm"
 archive(byte) = "wg.cma"
 archive(byte, plugin) = "wg.cma"
 archive(native) = "wg.cmxa"
