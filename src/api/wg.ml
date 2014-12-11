@@ -1104,7 +1104,7 @@ module Wctx = struct
 	  if not (Wlocale._matches loc range) then acc else 
 	  match acc with None -> Some (range, branch, d) 
 	  | Some (range', _, _) ->
-	      if Wlocale._compare range range' < -1 then acc else 
+	      if Wlocale._compare range range' < 0 then acc else
 	      Some (range, branch, d)
 	in
 	match List.fold_left find_branch None branches with 
