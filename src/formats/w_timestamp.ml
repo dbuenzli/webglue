@@ -13,7 +13,7 @@ module Timestamp = struct
   let doc = "a map with keys to the current time"
   let man = [
     Wformat.man_description;
-    `P "The format $(b,w.timestamp) defines the map keys $(b,utc) and 
+    `P "The format $(b,w.timestamp) defines the map keys $(b,utc) and
         $(b,local) with S-expression timestamps of the current time.";
     Wformat.man_uri_set;
     `P "The URI set is empty." ]
@@ -22,7 +22,7 @@ module Timestamp = struct
   let k_local = Bset.key "local"
   let keys = [
     k_utc, `Derived, "The current UTC time.";
-    k_local, `Derived, 
+    k_local, `Derived,
     "The current local time with the time zone offset.";]
 
   let se_of_time ~d t tz =
@@ -37,16 +37,16 @@ module Timestamp = struct
       Se.atom ~d (str "%02d" t.Unix.tm_min);
       Se.atom ~d (str "%02d" t.Unix.tm_sec)]
     in
-    let timezone = match tz with 
+    let timezone = match tz with
     | None -> Se.list ~d [ Se.atom "Z" ];
     | Some m ->
 	let m' = abs m in Se.list ~d [
 	Se.atom ~d (if m < 0 then "-" else "+");
-	Se.atom ~d (str "%02d" (m' / 60));	  
-	Se.atom ~d (str "%02d" (m' mod 60))] 
+	Se.atom ~d (str "%02d" (m' / 60));
+	Se.atom ~d (str "%02d" (m' mod 60))]
     in
     Se.list ~d [date; time; timezone]
-    
+
   let tz_offset local utc =      (* computes the timezone offset w.r.t. utc. *)
     let dd = local.Unix.tm_yday - utc.Unix.tm_yday in
     let dh = local.Unix.tm_hour - utc.Unix.tm_hour in
@@ -54,10 +54,10 @@ module Timestamp = struct
     if dd = 1 || dd < -1 (* year wrap *) then dm + (24 * 60) else
     if dd = -1 || dd > 1 (* year wrap *) then dm - (24 * 60) else
     dm (* same day *)
-    
+
   let create _ m =
-    let now = Unix.gettimeofday () in 
-    let utc = Unix.gmtime now in 
+    let now = Unix.gettimeofday () in
+    let utc = Unix.gmtime now in
     let local = Unix.localtime now in
     let tz_offset = tz_offset local utc in
     let d = Bset.dict m in
@@ -75,7 +75,7 @@ let () = Wformat.define (module Timestamp : Wformat.T)
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

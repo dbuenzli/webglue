@@ -11,7 +11,7 @@ open Wg
 (** {1 Map database} *)
 
 val init : string list -> unit
-(** [init dirs] initializes the map database, loading maps 
+(** [init dirs] initializes the map database, loading maps
     from the directories [dirs].
 
     Given a map [id], the database tries to load a file [id.map]
@@ -25,7 +25,7 @@ val find : Wctx.t -> Wg.id -> Wmap.t option
 
 val find_bset : Wg.id -> Bset.t option
 (** [find_bset id] returns the set of bindings with id [id]. The set has
-    the bindings as found in the file, without includes and format 
+    the bindings as found in the file, without includes and format
     definition. *)
 
 (*---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ val find_bset : Wg.id -> Bset.t option
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

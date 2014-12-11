@@ -15,10 +15,10 @@ val atom : atom Arg.converter
 
 (** {1 Optional arguments for every command} *)
 
-type copts = 
-    { verbosity : Log.verbosity; format_dirs : string list; 
+type copts =
+    { verbosity : Log.verbosity; format_dirs : string list;
       map_dirs : string list; dep_base : string; }
-(** The type collecting information set by options common to all 
+(** The type collecting information set by options common to all
     commands. *)
 
 val copts : copts Term.t
@@ -66,8 +66,8 @@ val conf : atom option Term.t
 
 (** {1 Sets of arguments common to some commands} *)
 
-type context = 
-    { copts : copts; locale : Wlocale.t option; conf : atom option; 
+type context =
+    { copts : copts; locale : Wlocale.t option; conf : atom option;
       id : Wg.id; c : Wctx.t }
 
 val context : locale_opt:bool -> context Term.t
@@ -78,7 +78,7 @@ val context : locale_opt:bool -> context Term.t
 (** {1 Functions} *)
 
 val out_v : string -> 'a Fmt.formatter -> 'a -> unit
-(** [out_v outf pp v] prints on [outf] the value [v] in a 
+(** [out_v outf pp v] prints on [outf] the value [v] in a
     vertical box with [pp]. Uses {!Sysm.with_outf_pp}. *)
 
 val out_deps : string -> string -> Wdep.Set.t -> unit
@@ -93,7 +93,7 @@ val out_deps : string -> string -> Wdep.Set.t -> unit
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

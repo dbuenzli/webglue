@@ -7,23 +7,23 @@
 open Wg
 open Cmdliner
 
-let cmds = [ 
-  Ccontent.cmd; Cdiagnose.cmd; Cget.cmd; Chelp.cmd; Cset.cmd; Cshow.cmd; 
+let cmds = [
+  Ccontent.cmd; Cdiagnose.cmd; Cget.cmd; Chelp.cmd; Cset.cmd; Cshow.cmd;
   Curiset.cmd; ]
 
 let version = "%%VERSION%%"
 let doc = "Command line tool to build static websites"
-let man = [ 
+let man = [
   `S "DESCRIPTION";
   `P "$(b,webglue) builds static websites from map files.";
-  `P "Use 'webglue help maps' for information about map files."; 
+  `P "Use 'webglue help maps' for information about map files.";
   `Noblank;
   `P "Use 'webglue help directives' for information about directives.";
   `Noblank;
   `P "Use 'webglue help topics' for a list of help topics.";
   `Noblank;
   `P "Use 'webglue help $(i,COMMAND)' for information about $(i,COMMAND).";
-   ] @ C.copts_man @ [ 
+   ] @ C.copts_man @ [
   `S "ENVIRONMENT";
   `P "Webglue commands make use of the following environment variables:";
   `I ("$(i,WEBGLUE_MAP_PATH)",
@@ -45,7 +45,7 @@ let man = [
 
 let info = Term.info "webglue" ~version ~doc ~sdocs:C.copts_sec ~man
 let default = Term.(ret (pure (fun _ -> `Help (`Pager, None)) $ C.copts))
-let main () = match Term.eval_choice (default, info) cmds with 
+let main () = match Term.eval_choice (default, info) cmds with
 | `Error _ -> exit 1
 | _ ->  if Wlog.Private.errors () > 0 then exit 1 else exit 0
 
@@ -58,7 +58,7 @@ let () = main ()
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

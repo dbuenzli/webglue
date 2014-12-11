@@ -9,8 +9,8 @@
 open Wg;;
 
 val init : string list -> unit
-(** [init dirs] initialize the format database, loading maps from 
-    the directories [dirs]. 
+(** [init dirs] initialize the format database, loading maps from
+    the directories [dirs].
 
     Given a format [prefix.suffix] the database tries to load a file
     [prefix_suffix.cmxs] (or [.cma]) located in [dirs] (recursively
@@ -29,7 +29,7 @@ include Wformat.Private.Db
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

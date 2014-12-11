@@ -4,7 +4,7 @@
    %%NAME%% release %%VERSION%%
   ---------------------------------------------------------------------------*)
 
-(** System abstraction. 
+(** System abstraction.
 
     All [Unix] module usage is confined to this module. *)
 
@@ -15,7 +15,7 @@ val getenv : string -> string option
 
 (** {1 File system operations} *)
 
-val mkdir : string -> bool 
+val mkdir : string -> bool
 (** [mkdir d] creates the directory [d] and returns [true]. If an error
     occurs, it is logged and [false] is returned. Intermediary directories
     are created as required. *)
@@ -25,13 +25,13 @@ val rename : string -> string -> bool
     occurs, it is logged and [false] is returned. *)
 
 val tmp_file : string -> string option
-(** [tmp_file f] is a temporary file in the same location as [f] and 
+(** [tmp_file f] is a temporary file in the same location as [f] and
     named after [f]. If an error occurs it is logged and [None] is returned. *)
 
 (** {1 Finding files} *)
 
 val make_relative : string -> string -> string
-(** [make_relative p f] is [f] without the prefix [p] or [f] if 
+(** [make_relative p f] is [f] without the prefix [p] or [f] if
     [p] is not a prefix of [f]. *)
 
 val find_file : string list -> string -> string option
@@ -55,20 +55,20 @@ val with_inf : string -> 'a -> (in_channel -> 'a) -> 'a
 
 val with_outf : string -> 'a -> (out_channel -> 'a) -> 'a
 (** [with_outf outf err f] is [f oc] where [oc] is an output channel
-    opened and closed on [outf] ([stdout] and not closed if [f] is ["-"]). 
+    opened and closed on [outf] ([stdout] and not closed if [f] is ["-"]).
     If a [Sys_error] occurs it is logged and [err] is returned. *)
 
-val with_outf_pp : string -> 
-  ('a, Format.formatter, unit, unit) Pervasives.format4 -> 'a 
-(** [with_outf_pp outf fmt a0 a1 ...] formats [a0], [a1], ... 
+val with_outf_pp : string ->
+  ('a, Format.formatter, unit, unit) Pervasives.format4 -> 'a
+(** [with_outf_pp outf fmt a0 a1 ...] formats [a0], [a1], ...
     according to [fmt] on a formatter opened and closed on [outf]
-    ([stdout] and not closed if [f] is ["-"]). 
+    ([stdout] and not closed if [f] is ["-"]).
     If a [Sys_error] occurs it is logged. *)
 
 val with_out_path : string -> 'a -> (out_channel -> 'a) -> 'a
-(** [with_out_path] is like {!with_outf} except the path is created if it 
+(** [with_out_path] is like {!with_outf} except the path is created if it
     doesn't exist. An error is logged if the path cannot be created. *)
-    
+
 (*---------------------------------------------------------------------------
    Copyright 2011 Daniel C. Bünzli.
    All rights reserved.
@@ -76,7 +76,7 @@ val with_out_path : string -> 'a -> (out_channel -> 'a) -> 'a
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

@@ -7,7 +7,7 @@
 (** S-expression IO from {!Ucutf} IO abstractions.
 
     [Seio] inputs S-expressions parsed according to {{:#def}this
-    definition} from {!Ucutf} input abstractions. 
+    definition} from {!Ucutf} input abstractions.
 
     {e Version %%VERSION%% - %%EMAIL%% } *)
 
@@ -21,26 +21,26 @@ type 'a t = [ `Atom of string | `List of 'a t list ] * 'a
 type pos = int * int
 (** The type for input positions. *)
 
-type range = pos * pos 
+type range = pos * pos
 (** The type for input ranges. *)
 
 type error = [
   | `Malformed_char
-  | `Illegal_escape of int 
+  | `Illegal_escape of int
   | `Illegal_char of int
   | `Mismatched_par
-  | `Unclosed_quote 
+  | `Unclosed_quote
   | `Unclosed_par ]
 (** The type for input errors. *)
 
 val error_message : error -> string
 (** [error_message e] is an english error message for [e]. *)
 
-val input : ?err:(error -> pos -> unit) -> (range -> 'a) -> 
+val input : ?err:(error -> pos -> unit) -> (range -> 'a) ->
   Ucutf.input -> 'a t list
 (** [input err annot i] reads a list of S-expressions from [i] (the
     [<input>] production of the {{:#grammar}grammar}). The empty list
-    [[]] is returned if no sexp was found. 
+    [[]] is returned if no sexp was found.
 
     The [annot] function is used to tag S-expressions whenever they
     are constructed, it is given the range of characters spanned by
@@ -51,7 +51,7 @@ val input : ?err:(error -> pos -> unit) -> (range -> 'a) ->
 
 (** {1:input Output} *)
 
-type dest = [ 
+type dest = [
   | `Channel of out_channel | `Buffer of Buffer.t | `Fun of (int -> unit) ]
     (** The type for output destinations. For [`Buffer], the buffer won't
 	be cleared. For [`Fun] the function is called with the output {e
@@ -71,7 +71,7 @@ val print : Format.formatter -> 'a t -> unit
 (** [print ppf e] pretty prints [e] on [ppf]. *)
 
 val to_string : 'a t -> string
-(** [to_string e] is like {!print}. 
+(** [to_string e] is like {!print}.
 
     {b Warning.} Not thread safe. Use {!print} for thread safety. *)
 
@@ -84,15 +84,15 @@ to write filters that preserve the user's input. *)
 module Full : sig
   type 'a se = 'a t
 
-  type 'a t = [ 
-    | `Atom of string | `List of 'a t list | `White of string 
-    | `Comment of string ] * 'a 
+  type 'a t = [
+    | `Atom of string | `List of 'a t list | `White of string
+    | `Comment of string ] * 'a
 (** The type for annotated S-expressions with whitespace and
     comments. Strings are UTF-8 encoded. *)
 
-  val input : ?err:(error -> pos -> unit) -> (range -> 'a) -> 
+  val input : ?err:(error -> pos -> unit) -> (range -> 'a) ->
     Ucutf.input -> 'a t list
-(** [input_full tag i] is like {!Seio.input} but also includes whitespace and 
+(** [input_full tag i] is like {!Seio.input} but also includes whitespace and
     comments. *)
 
   val output : output -> 'a t -> unit
@@ -104,12 +104,12 @@ module Full : sig
   (** [print ppf e] pretty prints [e] on [ppf]. *)
 
   val to_string : 'a t -> string
-  (** [to_string e] is like {!print}. 
+  (** [to_string e] is like {!print}.
 
       {b Warning.} Not thread safe. Use {!print} for thread safety. *)
 end
 
-(** {1:def S-expressions} 
+(** {1:def S-expressions}
 
     An {e S-expression} is either an {e atom} or a {e list} of S-expressions.
 
@@ -144,10 +144,10 @@ end
     {2:grammar The S-expression grammar}
 
     The grammar parsed by [Seio] on a stream of unicode
-    characters is defined by: 
+    characters is defined by:
 {v
-     <input> ::= <sexp>* 
-      <sexp> ::= <white> | <comment> | <token> | <qtoken> | <list> 
+     <input> ::= <sexp>*
+      <sexp> ::= <white> | <comment> | <token> | <qtoken> | <list>
       <list> ::= <LPAR> <sexp>* <RPAR>
      <token> ::= [^<tokenend>]+
     <qtoken> ::= <QUOT> <qseq>* <QUOT>
@@ -176,7 +176,7 @@ v}
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

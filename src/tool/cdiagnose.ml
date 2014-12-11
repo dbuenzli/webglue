@@ -5,15 +5,15 @@
   ---------------------------------------------------------------------------*)
 
 open Wg
-      
-let diagnose copts conf id_opt outf = match id_opt with 
+
+let diagnose copts conf id_opt outf = match id_opt with
 | None -> failwith "TODO"
-| Some id -> 
+| Some id ->
     let c = Wctx.Private.create ?conf Map_db.find id in
-    match Wctx.find_map c id with 
+    match Wctx.find_map c id with
     | None -> Wlog.err (`Undefined_map id)
     | Some m -> failwith "TODO"
-	    
+
 (* Command line interface *)
 
 open Cmdliner
@@ -23,8 +23,8 @@ let man = [
   `S "DESCRIPTION";
   `P "The command $(b,diagnose) shows format dependent diagnostics about
       the map $(i,ID).";
-  `P "If $(i,ID) is not present, the URI set of 
-      all maps in the map path is determined and errors are reported 
+  `P "If $(i,ID) is not present, the URI set of
+      all maps in the map path is determined and errors are reported
       for URI or URI path duplicates.";
    ] @ C.copts_man @ [
   `S "SEE ALSO";
@@ -40,7 +40,7 @@ let cmd = Term.(pure diagnose $ C.copts $ C.conf $ C.id_opt $ C.output), info
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

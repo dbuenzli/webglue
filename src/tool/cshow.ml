@@ -6,14 +6,14 @@
 
 open Wg
 
-let pp_format ppf ((`Atom fm, _), f) = Fmt.pp ppf "@[<v>%s@,  %s@]" fm f 
+let pp_format ppf ((`Atom fm, _), f) = Fmt.pp ppf "@[<v>%s@,  %s@]" fm f
 
 let show env outf kind entity = match kind with
 | `Format_path -> `Ok (C.out_v outf (Fmt.pp_list Fmt.pp_str) env.C.format_dirs)
 | `Map_path -> `Ok (C.out_v outf (Fmt.pp_list Fmt.pp_str) env.C.map_dirs)
 | `Formats -> `Ok (C.out_v outf (Fmt.pp_list pp_format) (Format_db.list ()))
 | `Map_file ->
-    match entity with 
+    match entity with
     | None -> `Error (true, "no map ID specified")
     | Some id ->
 	match Map_db.filename id with
@@ -24,21 +24,21 @@ let show env outf kind entity = match kind with
 
 open Cmdliner
 
-let kinds = [ 
-  "format-path",`Format_path; "map-path", `Map_path; "formats",`Formats; 
+let kinds = [
+  "format-path",`Format_path; "map-path", `Map_path; "formats",`Formats;
   "map-file", `Map_file ]
 
 let kinds_str = String.concat ", " (List.map fst kinds)
 
 let doc = Fmt.str "Show information on $(docv) (%s)." kinds_str
-let kind = 
+let kind =
   Arg.(required & pos 0 (some (enum kinds)) None & info [] ~docv:"KIND"~doc)
 
 let doc = "The entity to show (the map ID for map-files)."
 let entity = Arg.(value & pos 1 (some C.atom) None & info [] ~docv:"ENTITY"
 		    ~doc)
 
-let doc = "show information about the execution context" 
+let doc = "show information about the execution context"
 let man = [
   `S "DESCRIPTION";
   `P "The command $(b,show) shows information about the execution context of
@@ -48,7 +48,7 @@ let man = [
 
 let info = Term.info "show" ~sdocs:C.copts_sec ~doc ~man
 let cmd = Term.(ret (pure show $ C.copts $ C.output $ kind $ entity)), info
-  
+
 
 (*---------------------------------------------------------------------------
    Copyright 2011 Daniel C. Bünzli.
@@ -57,7 +57,7 @@ let cmd = Term.(ret (pure show $ C.copts $ C.output $ kind $ entity)), info
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

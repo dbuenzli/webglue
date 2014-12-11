@@ -8,7 +8,7 @@ open Wg;;
 
 module Text = struct
   include Wformat.Default
-  include Wformat.Standard_uris 
+  include Wformat.Standard_uris
 
   let name = Se.atom "w.text"
   let doc = "URIs to plain UTF-8 encoded text documents"
@@ -16,17 +16,17 @@ module Text = struct
     Wformat.man_description;
     `P "The format $(b,w.text) generates plain, UTF-8 encoded text documents
         by interpreting the S-expression list of the $(b,doc) key.";
-    Wformat.man_uri_set; ] @ 
+    Wformat.man_uri_set; ] @
     Wformat.Standard_uris.man @ [
     Wformat.man_uri_content;
     `P "The URI content is defined by the list of S-expression in [doc]. Each
-	S-expression is interepeted as @-text and defines one line of the 
+	S-expression is interepeted as @-text and defines one line of the
 	document." ]
 
   let keys = keys @ [
     Bset.Key.doc, `Required,
     "list of @-text defining each line of the document.";]
- 
+
   let uri_content c m uri dest =
     Setext.output_lines (Out.make dest) (fst (Wmap.get c m Bset.Key.doc))
 end
@@ -40,7 +40,7 @@ let () = Wformat.define (module Text : Wformat.T)
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 

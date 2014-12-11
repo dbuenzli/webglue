@@ -13,7 +13,7 @@ open Wg
 type 'a formatter = Format.formatter -> 'a -> unit
 (** The type for formatters of values of type ['a]. *)
 
-val pp : Format.formatter -> ('a, Format.formatter, unit) Pervasives.format -> 
+val pp : Format.formatter -> ('a, Format.formatter, unit) Pervasives.format ->
   'a
 (** [pp] is {!Format.fprintf} *)
 
@@ -29,31 +29,31 @@ val pp_str : string formatter
 val pp_opt : ?pp_none:unit formatter -> 'a formatter -> 'a option formatter
 (** [pp_opt pp_none pp_v] formats value of type ['a option]. The default
     value of [pp_none] prints nothing. *)
-    
+
 val pp_list : ?pp_sep:unit formatter -> 'a formatter -> 'a list formatter
 (** [pp_list pp_sep pp_v ppf] formats lists of type ['a]. Each value
     is printed with [pp_v] followed by [pp_sep] (defaults to {!pp_cut}).
     Empty lists never print anything. *)
 
-val pp_text : string formatter 
+val pp_text : string formatter
 (** [pp_text] formats text by replacing spaces and newlines in the string
     with calls to {!Format.pp_print_space} and {!Format.pp_force_newline}. *)
 
-val pp_lines : string formatter 
+val pp_lines : string formatter
 (** [pp_lines] formats lines by replacing newlines in the string
     with calls to {!Format.pp_force_newline}. *)
 
 val pp_range : ((int * int) * (int * int)) formatter
 (** [pp_range] formats a range. *)
 
-    
+
 (** {1 String converters} *)
 
 val str : ('a, unit, string) Pervasives.format -> 'a
 (** [str] is {!Format.fprintf}. *)
 
 val to_str_converter : 'a formatter -> ('a -> string)
-(** [to_str_converter pp_v] is a function converting values to string 
+(** [to_str_converter pp_v] is a function converting values to string
     as [pp_v] prints them. *)
 
 (*---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ val to_str_converter : 'a formatter -> ('a -> string)
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-     
+
    1. Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
 
