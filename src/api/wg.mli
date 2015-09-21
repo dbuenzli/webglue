@@ -1073,8 +1073,9 @@ module Wformat : sig
       the key when it is absent. [`Derived] means that the key is computed by
       the format at creation time. *)
 
-  type man_block = [
-    | `S of string | `P of string | `I of string * string | `Noblank ]
+  type man_block =
+    [ `S of string | `P of string | `Pre of string | `I of string * string
+    | `Noblank ]
   (** The type for man page blocks. *)
 
   (** The type for a map format.

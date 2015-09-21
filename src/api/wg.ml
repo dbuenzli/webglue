@@ -1255,8 +1255,9 @@ let wmap_locales c m k = match wmap_find (Wctx.with_locale c None) m k with
 
 module Wformat = struct
   type key_info = [ `Required | `Optional of se list option | `Derived ]
-  type man_block = [
-    | `S of string | `P of string | `I of string * string | `Noblank ]
+  type man_block =
+    [ `S of string | `P of string | `Pre of string | `I of string * string
+    | `Noblank ]
 
   module type T = sig
     val name : format

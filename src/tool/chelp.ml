@@ -395,13 +395,14 @@ let help _ man_format topic commands = match topic with
     match conv topic with
     | `Error e -> `Error (false, e)
     | `Ok t when t = "topics" ->
-	`Ok (C.out_v "-" (Fmt.pp_list Fmt.pp_str) topics)
+	      `Ok (C.out_v "-" (Fmt.pp_list Fmt.pp_str) topics)
     | `Ok t when List.mem t commands ->
-	`Help (man_format, Some t)
+	      `Help (man_format, Some t)
     | `Ok t ->
-	match (try `Ok (List.assoc t pages) with Not_found -> man_of_format t)
-	with `Error _ as e -> e
-	| `Ok p -> `Ok(Cmdliner.Manpage.print man_format Format.std_formatter p)
+	      match (try `Ok (List.assoc t pages) with Not_found -> man_of_format t)
+	      with `Error _ as e -> e
+	      | `Ok p -> `Ok
+              (Cmdliner.Manpage.print man_format Format.std_formatter p)
 
 (* Command line interface *)
 
