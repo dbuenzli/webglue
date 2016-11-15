@@ -5,6 +5,7 @@ authors: ["Daniel Bünzli <daniel.buenzl i@erratique.ch>"]
 license: "BSD3"
 ocaml-version: [>= "4.00.0"]
 depends: [ "cmdliner" "uuidm" ]
+tags: [ "org:erratique" ]
 build: [
   [ "pkg/pkg-git" ]
   [ "pkg/configure" lib ]

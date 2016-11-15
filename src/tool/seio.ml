@@ -61,9 +61,9 @@ let peek i = match Ucutf.peek i.i with
 
 let is_white = function 0x0020 | 0x0009 | 0x000D | 0x000A -> true | _ -> false
 let is_token_end = function
-  | 0x0020 | 0x0009 | 0x000D | 0x000A (* whitechars *)
-  | 0x0022 | 0x0028 | 0x0029 | 0x003B | 0x005C -> true
-  | _ -> false
+| 0x0020 | 0x0009 | 0x000D | 0x000A (* whitechars *)
+| 0x0022 | 0x0028 | 0x0029 | 0x003B | 0x005C -> true
+| _ -> false
 
 let skip_comment i =
   let rec aux i = match peek i with
@@ -159,18 +159,19 @@ type dest = [
   | `Channel of out_channel | `Buffer of Buffer.t | `Fun of (int -> unit) ]
 
 type output =
-    { outc : char -> unit;                               (* character output. *)
-      outs : string -> int -> int -> unit;                  (* string output. *)
-      b : Buffer.t }
+  { outc : char -> unit;                               (* character output. *)
+    outs : Bytes.t -> int -> int -> unit;                  (* string output. *)
+    b : Buffer.t }
 
 let make_output d =
+  let add_subbytes b s = Buffer.add_substring b (Bytes.unsafe_to_string s) in
   let outc, outs = match d with
   | `Channel c -> (output_char c), (output c)
-  | `Buffer b -> (Buffer.add_char b), (Buffer.add_substring b)
+  | `Buffer b -> (Buffer.add_char b), (add_subbytes b)
   | `Fun f ->
       let oc c = f (Char.code c) in
       let os s p l =
-        for i = p to p + l - 1 do f (Char.code (String.get s p)) done
+        for i = p to p + l - 1 do f (Char.code (Bytes.get s p)) done
       in
       oc, os
   in
@@ -199,34 +200,34 @@ let quote_token b s =                         (* quotes the token if needed. *)
   with Exit -> Buffer.contents b
 
 let output o e =
-  let outs o s = o.outs s 0 (String.length s) in
+  let outs o s = o.outs (Bytes.unsafe_of_string s) 0 (String.length s) in
   let rec aux o was_atom = function
-    | ((`Atom s, _) :: el) :: todo ->
-	if was_atom then o.outc ' ';
-	outs o (quote_token o.b s);
-	aux o true (el :: todo)
-    | ((`List l, _) :: el)  :: todo -> o.outc '('; aux o false (l :: el :: todo)
-    | [] :: [] -> ()
-    | [] :: todo -> o.outc ')'; aux o false todo
-    | [] -> assert false
+  | ((`Atom s, _) :: el) :: todo ->
+      if was_atom then o.outc ' ';
+      outs o (quote_token o.b s);
+      aux o true (el :: todo)
+  | ((`List l, _) :: el)  :: todo -> o.outc '('; aux o false (l :: el :: todo)
+  | [] :: [] -> ()
+  | [] :: todo -> o.outc ')'; aux o false todo
+  | [] -> assert false
   in
   aux o false ([e] :: [])
 
 let print ppf e =
   let rec aux b ppf space = function
-    | ((`Atom s, _) :: el) :: todo ->
-	if space then Format.pp_print_space ppf ();
-	Format.pp_print_string ppf (quote_token b s);
-	aux b ppf true (el :: todo)
-    | ((`List l, _) :: el) :: todo ->
-	if space then Format.pp_print_space ppf ();
-	Format.pp_open_hovbox ppf 1;
-	Format.pp_print_char ppf '(';
-	aux b ppf false (l :: el :: todo)
-    | [] :: [] -> ()
-    | [] :: todo ->
-	Format.pp_print_char ppf ')'; Format.pp_close_box ppf ();
-	aux b ppf true todo
+  | ((`Atom s, _) :: el) :: todo ->
+      if space then Format.pp_print_space ppf ();
+      Format.pp_print_string ppf (quote_token b s);
+      aux b ppf true (el :: todo)
+  | ((`List l, _) :: el) :: todo ->
+      if space then Format.pp_print_space ppf ();
+      Format.pp_open_hovbox ppf 1;
+      Format.pp_print_char ppf '(';
+      aux b ppf false (l :: el :: todo)
+  | [] :: [] -> ()
+  | [] :: todo ->
+      Format.pp_print_char ppf ')'; Format.pp_close_box ppf ();
+      aux b ppf true todo
     | _ -> assert false
   in
   let b = Buffer.create 512 in
@@ -251,55 +252,55 @@ module Full = struct
     p_sexp_list (make_input err annot i) [] ([] :: [])
 
   let output o e =
-    let outs o s = o.outs s 0 (String.length s) in
+    let outs o s = o.outs (Bytes.unsafe_of_string s) 0 (String.length s) in
     let rec aux o was_atom = function
-      | ((`White w, _) :: el) :: todo ->
-	  outs o w;
-	  aux o false (el :: todo)
-      | ((`Atom s, _) :: el) :: todo ->
-	  if was_atom then o.outc ' ';
-	  outs o (quote_token o.b s);
-	  aux o true (el :: todo)
-      | ((`List l, _) :: el)  :: todo ->
-	  o.outc '(';
-	  aux o false (l :: el :: todo)
-      | ((`Comment c, _) :: el) :: todo ->
-          o.outc ';'; outs o c; o.outc '\n';
-	  aux o false (el :: todo)
-      | [] :: [] -> ()
-      | [] :: todo ->
-	  o.outc ')';
-	  aux o false (todo)
-      | [] -> assert false
+    | ((`White w, _) :: el) :: todo ->
+        outs o w;
+        aux o false (el :: todo)
+    | ((`Atom s, _) :: el) :: todo ->
+        if was_atom then o.outc ' ';
+        outs o (quote_token o.b s);
+        aux o true (el :: todo)
+    | ((`List l, _) :: el)  :: todo ->
+        o.outc '(';
+        aux o false (l :: el :: todo)
+    | ((`Comment c, _) :: el) :: todo ->
+        o.outc ';'; outs o c; o.outc '\n';
+        aux o false (el :: todo)
+    | [] :: [] -> ()
+    | [] :: todo ->
+        o.outc ')';
+        aux o false (todo)
+    | [] -> assert false
     in
     aux o false ([e] :: [])
 
   let print ppf e =
     let rec aux b ppf space = function
-      | ((`White w, _) :: el) :: todo ->
-	  let sp = ref true in
-	  for i = 0 to (String.length w) - 1 do
-	    if w.[i] = '\n' then (Format.pp_force_newline ppf (); sp := false)
-	  done;
-	  aux b ppf !sp (el :: todo)
-      | ((`Atom s, _) :: el) :: todo ->
-	  if space then Format.pp_print_space ppf ();
-	  Format.pp_print_string ppf (quote_token b s);
-	  aux b ppf true (el :: todo)
-      | ((`List l, _) :: el) :: todo ->
-	  if space then Format.pp_print_space ppf ();
-	  Format.pp_open_hovbox ppf 1;
-	  Format.pp_print_char ppf '(';
-	  aux b ppf false (l :: el :: todo)
-      | ((`Comment c, _) :: el) :: todo ->
-	  Format.pp_print_string ppf (";" ^ c);
-	  Format.pp_force_newline ppf ();
-	  aux b ppf true (el :: todo)
-      | [] :: [] -> ()
-      | [] :: todo ->
-	  Format.pp_print_char ppf ')'; Format.pp_close_box ppf ();
-	  aux b ppf true todo
-      | _ -> assert false
+    | ((`White w, _) :: el) :: todo ->
+        let sp = ref true in
+        for i = 0 to (String.length w) - 1 do
+          if w.[i] = '\n' then (Format.pp_force_newline ppf (); sp := false)
+      done;
+      aux b ppf !sp (el :: todo)
+    | ((`Atom s, _) :: el) :: todo ->
+        if space then Format.pp_print_space ppf ();
+        Format.pp_print_string ppf (quote_token b s);
+        aux b ppf true (el :: todo)
+    | ((`List l, _) :: el) :: todo ->
+        if space then Format.pp_print_space ppf ();
+        Format.pp_open_hovbox ppf 1;
+        Format.pp_print_char ppf '(';
+        aux b ppf false (l :: el :: todo)
+    | ((`Comment c, _) :: el) :: todo ->
+        Format.pp_print_string ppf (";" ^ c);
+        Format.pp_force_newline ppf ();
+         aux b ppf true (el :: todo)
+    | [] :: [] -> ()
+    | [] :: todo ->
+        Format.pp_print_char ppf ')'; Format.pp_close_box ppf ();
+        aux b ppf true todo
+    | _ -> assert false
     in
     let b = Buffer.create 512 in
     aux b ppf false ([e] :: [])

@@ -250,7 +250,7 @@ let init_input i encoding =
 	  | None -> set ~r:(push i [b0] i.r) `UTF_16BE   (* 1/2 byte in file. *)
 	  | Some 0xFF -> set ~bom:true `UTF_16BE             (* UTF-16BE BOM. *)
 	  | Some b1 ->      (* no BOM => UTF16BE as UTF-8 would be malformed. *)
-	      set ~r:(push i [b0; b1] i.r) `UTF_16BE
+	     set ~r:(push i [b0; b1] i.r) `UTF_16BE
 	  end
       | Some (0xFF as b0) ->                  (* try to parse a UTF-16LE BOM. *)
 	  begin match r_opt () with

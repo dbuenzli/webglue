@@ -175,13 +175,13 @@ module Files = struct
   let uri_content eval m u dst =
     try
       let len = 8192 in
-      let buffer = String.create 8192 in
+      let buffer = Bytes.create 8192 in
       let ic = open_in_bin (Dict.get (Wuri.dict u) Dict.Key.filename) in
       try
 	let o = Out.make dst in
 	let rec copy ic buffer len o = match input ic buffer 0 len with
 	| 0 -> () (* eof *)
-	| l -> Out.ssub o buffer 0 l; copy ic buffer len o
+	| l -> Out.ssub o (Bytes.unsafe_to_string buffer) 0 l; copy ic buffer len o
 	in
 	copy ic buffer len o;
 	close_in ic

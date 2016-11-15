@@ -10,14 +10,18 @@ let format_str (fm : atom) = Se.to_atom_str (fm :> se)
 let msg_def fm f = Wlog.msg "format %s defined in %s" (format_str fm) f
 
 let file_of_format fm =
-  let f = String.copy (format_str fm) in
-  for i = 0 to String.length f - 1 do if f.[i] = '.' then f.[i] <- '_' done;
-  Dynlink.adapt_filename (f ^ ".cma")
+  let f = Bytes.of_string (format_str fm) in
+  for i = 0 to Bytes.length f - 1 do
+    if Bytes.get f i = '.' then Bytes.set f i '_'
+  done;
+  Dynlink.adapt_filename ((Bytes.unsafe_to_string f) ^ ".cma")
 
 let format_of_file f =
-  let fm = Filename.chop_extension (Filename.basename f) in
-  for i = 0 to String.length fm - 1 do if fm.[i] = '_' then fm.[i] <- '.' done;
-  Se.atom fm
+  let fm = Bytes.of_string (Filename.chop_extension (Filename.basename f)) in
+  for i = 0 to Bytes.length fm - 1 do
+    if Bytes.get fm i = '_' then Bytes.set fm i '.'
+  done;
+  Se.atom (Bytes.unsafe_to_string fm)
 
 let dirs = ref []
 let init ds = dirs := ds

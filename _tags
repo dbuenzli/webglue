@@ -1,5 +1,5 @@
+true: bin_annot, safe_string, package(bytes)
 true: package(dynlink), package(unix), package(cmdliner), package(uuidm)
-<**/*.{ml,mli}> : annot
 <src/api> : include
 <src/tool> : include
 <src/formats> : include

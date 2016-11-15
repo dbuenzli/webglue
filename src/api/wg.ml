@@ -22,22 +22,24 @@ let err_not_list = "s-expression is not a list"
 (* Output abstraction *)
 
 module Out = struct
-  type output = { c : char -> unit; s : string -> int -> int -> unit; }
+  type output = { c : char -> unit; s : Bytes.t -> int -> int -> unit; }
   type dest = [
     | `Channel of out_channel | `Buffer of Buffer.t | `Fun of (int -> unit) ]
 
   let c o = o.c
-  let s o s = o.s s 0 (String.length s)
-  let ssub o = o.s
+  let s o s = o.s (Bytes.unsafe_of_string s) 0 (String.length s)
+  let ssub o s pos len = o.s (Bytes.unsafe_of_string s) pos len
   let make = function
-    | `Channel c -> { c = output_char c; s = output c }
-    | `Buffer b -> { c = Buffer.add_char b; s = Buffer.add_substring b }
-    | `Fun f ->
-	let c c = f (Char.code c) in
-	let s s p l =
-          for i = p to p + l - 1 do f (Char.code (String.get s p)) done
-	in
-	{ c; s }
+  | `Channel c -> { c = output_char c; s = output c }
+  | `Buffer b ->
+      let add_sub b s = Buffer.add_substring b (Bytes.unsafe_to_string s) in
+      { c = Buffer.add_char b; s = add_sub b }
+  | `Fun f ->
+      let c c = f (Char.code c) in
+      let s s p l =
+        for i = p to p + l - 1 do f (Char.code (Bytes.get s p)) done
+      in
+      { c; s }
 end
 
 (* Dictionaries, see http://mlton.org/PropertyList. *)
@@ -94,8 +96,8 @@ module Wlog = struct
     | `Msg of string * dict
     | `Msg_traces of string * dict * (string * dict) list
     | `Expected of
-	[ `Eol | `This of string ] *
-	[ `Se of se | `Eol of dict | `That of string * dict ]
+        [ `Eol | `This of string ] *
+        [ `Se of se | `Eol of dict | `That of string * dict ]
     | `Undefined_key of se * atom
     | `Undefined_map of atom
     | `Format_exn of format * exn * string * dict ]
@@ -138,7 +140,7 @@ let err_locale_match (`Atom l, _) d = Wlog.msg ~d "no match for locale `%s'" l
 let err_seq_miss a d = Wlog.msg ~d "missing `%s' directive binding in w.seq" a
 let err_range_twice loc d d1 d2 =
   `Msg_traces (str "two bindings for the same locale range `%s'" loc, d,
-	       ["first binding", d1; "second binding", d2])
+               ["first binding", d1; "second binding", d2])
 
 let err_eval_uuid_name d =
   Wlog.msg ~d "evaluation to non empty @@-text for UUID name expected"
@@ -197,10 +199,10 @@ module Se = struct
   let compare e e' =                   (* lexicographic order without dicts. *)
     let rec aux s s' = match s, s' with
     | ((`Atom a, _) :: es) :: up, ((`Atom a', _) :: es') :: up' ->
-	let c = compare a a' in
-	if c <> 0 then c else aux (es :: up) (es' :: up')
+        let c = compare a a' in
+        if c <> 0 then c else aux (es :: up) (es' :: up')
     | ((`List l, _) :: es) :: up, ((`List l', _) :: es') :: up' ->
-	aux (l :: es :: up) (l' :: es' :: up')
+        aux (l :: es :: up) (l' :: es' :: up')
     | [] :: up, [] :: up' -> aux up up'
     | [], [] -> 0
     | ((`Atom _, _) :: _) :: _, ((`List _, _) :: _) :: _ -> -1
@@ -225,12 +227,12 @@ module Se = struct
   type 'a parser = string * (se -> [ `Error | `Ok of 'a])
 
   let atom_parser typ to_t = typ, fun e -> match e with
-  | `List _, dict -> Wlog.err (exp_this typ e); `Error
-  | `Atom a, dict -> to_t a dict
+    | `List _, dict -> Wlog.err (exp_this typ e); `Error
+    | `Atom a, dict -> to_t a dict
 
   let list_parser typ to_t = typ, fun e -> match e with
-  | `Atom _, dict -> Wlog.err (exp_this typ e); `Error
-  | `List es, dict -> to_t es dict
+    | `Atom _, dict -> Wlog.err (exp_this typ e); `Error
+    | `List es, dict -> to_t es dict
 
   (* Running parsers *)
 
@@ -251,11 +253,11 @@ module Se = struct
   let p_atom ?(validate = fun _ -> true) typ = typ, fun e -> match e with
     | `List _, _ -> Wlog.err (exp_this typ e); `Error
     | `Atom a, _  as e ->
-	if validate a then `Ok e else (Wlog.err (exp_this typ e); `Error)
+        if validate a then `Ok e else (Wlog.err (exp_this typ e); `Error)
 
   let p_list typ = typ, fun e -> match e with
-  | `Atom _, _ -> Wlog.err (exp_this typ e); `Error
-  | `List _, _ as e -> `Ok e
+    | `Atom _, _ -> Wlog.err (exp_this typ e); `Error
+    | `List _, _ as e -> `Ok e
 
   (* String parsers for atom parsers *)
 
@@ -286,8 +288,8 @@ module Se = struct
   let p_string = atom_parser type_string (fun s _ -> `Ok s)
   let p_uuid = p_t type_uuid to_uuid
   let p_enum l = atom_parser (type_enum l) (fun s dict ->
-    try `Ok (List.assoc s l) with
-    | Not_found -> Wlog.err (exp_this (type_enum l) (`Atom s, dict)); `Error)
+      try `Ok (List.assoc s l) with
+      | Not_found -> Wlog.err (exp_this (type_enum l) (`Atom s, dict)); `Error)
 
   (* List parsers *)
 
@@ -296,50 +298,50 @@ module Se = struct
     k, fun e -> match e with
     | `Atom _, _ -> Wlog.err (exp_this k e); `Error
     | `List l, _ ->
-	if not empty && l = [] then (Wlog.err (exp_this k e); `Error)
-	else
-	  let add acc e = match (snd p) e with
-	  | `Error -> raise Exit | `Ok v -> v :: acc
-	  in
-	  try `Ok (List.rev (List.fold_left add [] l)) with Exit -> `Error
+        if not empty && l = [] then (Wlog.err (exp_this k e); `Error)
+        else
+        let add acc e = match (snd p) e with
+        | `Error -> raise Exit | `Ok v -> v :: acc
+        in
+        try `Ok (List.rev (List.fold_left add [] l)) with Exit -> `Error
 
   let p_pair p0 p1 =
     let k = type_t2 (fst p0) (fst p1) in
     list_parser k (fun es d -> match es with
-    | [e0; e1] ->
-	(match (snd p0) e0 with `Error -> `Error | `Ok v0 ->
-	  (match (snd p1) e1 with `Error -> `Error | `Ok v1 -> `Ok (v0, v1)))
-    | es -> Wlog.err (exp_this k (list ~d es)); `Error)
+      | [e0; e1] ->
+          (match (snd p0) e0 with `Error -> `Error | `Ok v0 ->
+            (match (snd p1) e1 with `Error -> `Error | `Ok v1 -> `Ok (v0, v1)))
+      | es -> Wlog.err (exp_this k (list ~d es)); `Error)
 
   let p_t2 = p_pair
   let p_t3 p0 p1 p2 =
     let k = type_t3 (fst p0) (fst p1) (fst p2) in
     list_parser k (fun es d -> match es with
-    | [e0; e1; e2] ->
-	(match (snd p0) e0 with `Error -> `Error | `Ok v0 ->
-	  (match (snd p1) e1 with `Error -> `Error | `Ok v1 ->
-	    (match (snd p2) e2 with `Error -> `Error | `Ok v2 ->
-	      `Ok (v0, v1, v2))))
-    | es -> Wlog.err (exp_this k (list ~d es)); `Error)
+      | [e0; e1; e2] ->
+          (match (snd p0) e0 with `Error -> `Error | `Ok v0 ->
+            (match (snd p1) e1 with `Error -> `Error | `Ok v1 ->
+              (match (snd p2) e2 with `Error -> `Error | `Ok v2 ->
+                `Ok (v0, v1, v2))))
+      | es -> Wlog.err (exp_this k (list ~d es)); `Error)
 
   let p_t4 p0 p1 p2 p3 =
     let k = type_t4 (fst p0) (fst p1) (fst p2) (fst p3) in
     list_parser k (fun es d -> match es with
-    | [e0; e1; e2; e3] ->
-	(match (snd p0) e0 with `Error -> `Error | `Ok v0 ->
-	  (match (snd p1) e1 with `Error -> `Error | `Ok v1 ->
-	    (match (snd p2) e2 with `Error -> `Error | `Ok v2 ->
-	      (match (snd p3) e3 with `Error -> `Error | `Ok v3 ->
-	      `Ok (v0, v1, v2, v3)))))
-    | es -> Wlog.err (exp_this k (list ~d es)); `Error)
+      | [e0; e1; e2; e3] ->
+          (match (snd p0) e0 with `Error -> `Error | `Ok v0 ->
+            (match (snd p1) e1 with `Error -> `Error | `Ok v1 ->
+              (match (snd p2) e2 with `Error -> `Error | `Ok v2 ->
+                (match (snd p3) e3 with `Error -> `Error | `Ok v3 ->
+                  `Ok (v0, v1, v2, v3)))))
+      | es -> Wlog.err (exp_this k (list ~d es)); `Error)
 
   let p_fold ?(robust = false) f acc p =
     list_parser (type_list_of (fst p)) (fun es d ->
-      let fold acc e = match (snd p) e with
-      | `Error -> if robust then acc else raise Exit
+        let fold acc e = match (snd p) e with
+        | `Error -> if robust then acc else raise Exit
       | `Ok v -> f acc v
-      in
-      try `Ok (List.fold_left fold (acc d) es) with Exit -> `Error)
+        in
+        try `Ok (List.fold_left fold (acc d) es) with Exit -> `Error)
 end
 
 (* Sets of atoms, atom maps and sets of bindings *)
@@ -400,13 +402,13 @@ module Bset = struct
   let values (m, _) = List.rev (Amap.fold (fun _ (v, _) acc -> v :: acc) m [])
   let p_bindings ~robust =
     Se.list_parser (type_list_of type_binding) (fun es d ->
-      let bind acc = function
-	| `List ((`Atom _, _ as k) :: v), d -> add ~d acc k v
-	| e ->
-	    Wlog.err (exp_this type_binding e);
-	    if robust then acc else raise Exit
-      in
-      try `Ok (List.fold_left bind (empty d) es) with Exit -> `Error)
+        let bind acc = function
+        | `List ((`Atom _, _ as k) :: v), d -> add ~d acc k v
+  | e ->
+      Wlog.err (exp_this type_binding e);
+      if robust then acc else raise Exit
+        in
+        try `Ok (List.fold_left bind (empty d) es) with Exit -> `Error)
 
   let to_bindings m =
     let add acc k v d = ((`List ((k :> se) :: v)), d) :: acc in
@@ -452,7 +454,7 @@ module SeUTC = struct
   let p_month = Se.p_int_range 1 12
   let p_day y m = Se.p_int_range 1 (month_len y m)
   let p_date = Se.list_parser type_date (fun es dict ->
-    try
+      try
       let y, es = Se.pnext p_year es dict in
       let m, es = Se.pnext ~empty:1 p_month es dict in
       let d, _  = Se.pnext ~empty:1 ~last:true (p_day y m) es dict in
@@ -463,34 +465,34 @@ module SeUTC = struct
   let p_min = Se.p_int_range 0 59
   let p_sec = Se.p_int_range 0 60 (* leap secs ! *)
   let p_frac = Se.atom_parser type_unit_frac (fun a dict ->
-    try
-      let f = float_of_string a in
-      if 0. <= f && f < 1. then `Ok f else failwith ""
-    with Failure _ -> `Error)
+      try
+        let f = float_of_string a in
+        if 0. <= f && f < 1. then `Ok f else failwith ""
+      with Failure _ -> `Error)
 
   let p_time = Se.list_parser type_time (fun es d -> try
-    let h, es = Se.pnext p_hour es d in
-    let m, es = Se.pnext ~empty:0 p_min es d in
-    let s, es = Se.pnext ~empty:0 p_sec es d in
-    let f, _  = Se.pnext ~empty:0. ~last:true p_frac es d in
-    `Ok (h, m, s, f)
-  with Exit -> `Error)
+      let h, es = Se.pnext p_hour es d in
+      let m, es = Se.pnext ~empty:0 p_min es d in
+      let s, es = Se.pnext ~empty:0 p_sec es d in
+      let f, _  = Se.pnext ~empty:0. ~last:true p_frac es d in
+      `Ok (h, m, s, f)
+    with Exit -> `Error)
 
   let p_offset = Se.list_parser type_toffset (fun es d -> try match es with
-  | [`Atom "Z", _] -> `Ok (`P (0, 0))
-  | (`Atom ("+" | "-" as sign), _) :: es ->
-      let h, es = Se.pnext p_hour es d in
-      let m, _  = Se.pnext ~empty:0 ~last:true p_min es d in
-      `Ok (if sign = "+" then `P (h, m) else `N (h, m))
-  | _ -> Wlog.err (exp_this type_toffset (Se.list ~d es)); `Error
-  with Exit -> `Error)
+    | [`Atom "Z", _] -> `Ok (`P (0, 0))
+    | (`Atom ("+" | "-" as sign), _) :: es ->
+        let h, es = Se.pnext p_hour es d in
+        let m, _  = Se.pnext ~empty:0 ~last:true p_min es d in
+        `Ok (if sign = "+" then `P (h, m) else `N (h, m))
+    | _ -> Wlog.err (exp_this type_toffset (Se.list ~d es)); `Error
+    with Exit -> `Error)
 
   let p_timestamp = Se.list_parser type_timestamp (fun es d -> try
-    let date, es = Se.pnext p_date es d in
-    let time, es = Se.pnext ~empty:(0,0,0,0.) p_time es d in
-    let zone, _ = Se.pnext ~empty:(`P(0,0)) ~last:true p_offset es d in
-    `Ok (date, time, zone)
-  with Exit -> `Error)
+      let date, es = Se.pnext p_date es d in
+      let time, es = Se.pnext ~empty:(0,0,0,0.) p_time es d in
+      let zone, _ = Se.pnext ~empty:(`P(0,0)) ~last:true p_offset es d in
+      `Ok (date, time, zone)
+    with Exit -> `Error)
 end
 
 (* S-expressions as textual data *)
@@ -498,29 +500,29 @@ end
 module Setext = struct
   let output ?(out_string = Out.s) ?(until_list = false) o es =
     let rec aux o os ul space = function
-      | (`Atom "@", _) :: rest -> aux o os ul false rest
-      | (`Atom d, _) :: rest ->
-	  if space then os o " ";
-	  if d = "@@" then os o "@" else os o d;
-	  aux o os ul true rest
-      | [] -> []
-      | ((`List _, dict as e) :: rest as es) ->
-	  if ul then es else
-	  begin
-	    Wlog.err (exp_this type_atom e);
-	    aux o os ul space rest
-	  end
+    | (`Atom "@", _) :: rest -> aux o os ul false rest
+    | (`Atom d, _) :: rest ->
+        if space then os o " ";
+        if d = "@@" then os o "@" else os o d;
+        aux o os ul true rest
+    | [] -> []
+    | ((`List _, dict as e) :: rest as es) ->
+        if ul then es else
+        begin
+          Wlog.err (exp_this type_atom e);
+          aux o os ul space rest
+        end
     in
     aux o out_string until_list false es
 
   let rec output_lines ?out_string o = function
-    | (`List l, _) :: r ->
-	ignore (output ?out_string o l);
-	if r <> [] then Out.c o '\n';
-	output_lines ?out_string o r
-    | [] -> ()
-    | (`Atom _, _ as e) :: r ->
-	Wlog.err (exp_this type_list e); output_lines ?out_string o r
+  | (`List l, _) :: r ->
+      ignore (output ?out_string o l);
+      if r <> [] then Out.c o '\n';
+      output_lines ?out_string o r
+  | [] -> ()
+  | (`Atom _, _ as e) :: r ->
+      Wlog.err (exp_this type_list e); output_lines ?out_string o r
 
   let to_string es =
     let b = Buffer.create 256 in
@@ -528,18 +530,17 @@ module Setext = struct
     Buffer.contents b
 
   let to_atom = function  (* TODO *)
-    | `Atom _, _ as a -> a
-    | `List al, d ->
-	let b = Buffer.create 256 in
-	ignore (output (Out.make (`Buffer b)) al);
-	`Atom (Buffer.contents b), d
+  | `Atom _, _ as a -> a
+  | `List al, d ->
+      let b = Buffer.create 256 in
+      ignore (output (Out.make (`Buffer b)) al);
+      `Atom (Buffer.contents b), d
 end
 
 (* S-expressions as XML data. *)
 
 module SeXML = struct
   (* TODO review html generation + do a pretty output + escape *)
-
 
   let output_decl o =
     Out.s o "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -567,14 +568,14 @@ module SeXML = struct
     if stag then (Out.c o '>'); if space then Out.c o ' '; out_data o d
 
   let rec output_atts o = function
-    | (`List ((`Atom name, _) :: data), _) :: rest ->
-	Out.c o ' '; Out.s o name; Out.s o "=\"";
-	  ignore (Setext.output ~out_string:out_data o data);
-	Out.c o '\"';
-	  output_atts o rest
-    | [] -> ()
-    | e :: rest ->
-	Wlog.err (exp (`This "attribute") (`Se e)); output_atts o rest
+  | (`List ((`Atom name, _) :: data), _) :: rest ->
+      Out.c o ' '; Out.s o name; Out.s o "=\"";
+      ignore (Setext.output ~out_string:out_data o data);
+      Out.c o '\"';
+      output_atts o rest
+  | [] -> ()
+  | e :: rest ->
+      Wlog.err (exp (`This "attribute") (`Se e)); output_atts o rest
 
   let output_comment o stag space contents =
     if stag then Out.c o '>'; if space then Out.c o ' ';
@@ -602,36 +603,36 @@ module SeXML = struct
 
   let output ?(html = false) o se =
     let rec aux o stag space tags = function
-      | ((`List ((`Atom "&", _) :: (`Atom entity, _) :: []), _) :: es) :: up ->
-	  if stag then Out.c o '>'; if space then Out.c o ' ';
-	  Out.c o '&'; Out.s o entity; Out.c o ';';
-	  aux o false true tags (es :: up)
-      | ((`List ((`Atom "!", _) :: comment), _) :: es) :: up ->
-	  output_comment o stag space comment;
-	  aux o false false tags (es :: up)
-      | ((`List ((`Atom tag, _) :: contents), _) :: es) :: up ->
-	  let atts, childs = match contents with
-	  | (`List ((`Atom "@", _) :: atts), _) :: childs -> atts, childs
-	  | childs -> [], childs
-	  in
-	  output_stag o stag space tag atts;
-	  aux o true false (tag :: tags) (childs :: es :: up)
-      | ((`Atom "@", _) :: es) :: up ->
-	  aux o stag false tags (es :: up)
-      | ((`Atom "@@", _) :: es) :: up ->
-	  if stag then Out.c o '>'; if space then Out.c o ' '; Out.c o '@';
-	  aux o false true tags (es :: up)
-      | ((`Atom d, _) :: es) :: up ->
-	  output_el_data o stag space d;
-	  aux o false true tags (es :: up);
-      | ((`List _, _ as e) :: es) :: up ->
-	  Wlog.err (exp (`This "TODO") (`Se e));
-	  aux o space stag tags (es :: up)
-      | [] :: [] -> ()
-      | [] :: up ->
-	  output_etag html o stag (List.hd tags);
-	  aux o false true (List.tl tags) up
-      | [] -> assert false
+    | ((`List ((`Atom "&", _) :: (`Atom entity, _) :: []), _) :: es) :: up ->
+        if stag then Out.c o '>'; if space then Out.c o ' ';
+        Out.c o '&'; Out.s o entity; Out.c o ';';
+        aux o false true tags (es :: up)
+    | ((`List ((`Atom "!", _) :: comment), _) :: es) :: up ->
+        output_comment o stag space comment;
+        aux o false false tags (es :: up)
+    | ((`List ((`Atom tag, _) :: contents), _) :: es) :: up ->
+        let atts, childs = match contents with
+        | (`List ((`Atom "@", _) :: atts), _) :: childs -> atts, childs
+        | childs -> [], childs
+        in
+        output_stag o stag space tag atts;
+        aux o true false (tag :: tags) (childs :: es :: up)
+    | ((`Atom "@", _) :: es) :: up ->
+        aux o stag false tags (es :: up)
+    | ((`Atom "@@", _) :: es) :: up ->
+        if stag then Out.c o '>'; if space then Out.c o ' '; Out.c o '@';
+        aux o false true tags (es :: up)
+    | ((`Atom d, _) :: es) :: up ->
+        output_el_data o stag space d;
+        aux o false true tags (es :: up);
+    | ((`List _, _ as e) :: es) :: up ->
+        Wlog.err (exp (`This "TODO") (`Se e));
+        aux o space stag tags (es :: up)
+    | [] :: [] -> ()
+    | [] :: up ->
+        output_etag html o stag (List.hd tags);
+        aux o false true (List.tl tags) up
+    | [] -> assert false
     in
     aux o false false [] ([se] :: [])
 end
@@ -654,14 +655,14 @@ module Wlocale = struct
     let first = ref true in
     try                   (*  parse (1*8alpha | '*') *('-' (1*8alnum | '*')) *)
       for i = 0 to String.length s - 1 do
-	if s.[i] = '-' then
-	  (if !c <> 0 && !c <= 8 then (first := false; c := 0) else raise Exit)
-	else if s.[i] = '*' && !c = 0 then
-	  (if range then c := 8 else raise Exit)
-	else if !first then
-	  (if is_alpha (Char.code s.[i]) then incr c else raise Exit)
-	else
-	  (if is_alnum (Char.code s.[i]) then incr c else raise Exit)
+        if s.[i] = '-' then
+          (if !c <> 0 && !c <= 8 then (first := false; c := 0) else raise Exit)
+        else if s.[i] = '*' && !c = 0 then
+          (if range then c := 8 else raise Exit)
+        else if !first then
+          (if is_alpha (Char.code s.[i]) then incr c else raise Exit)
+        else
+        (if is_alnum (Char.code s.[i]) then incr c else raise Exit)
       done;
       !c <> 0 && !c <= 8
     with Exit -> false
@@ -683,7 +684,7 @@ module Wlocale = struct
   let _compare ts ts' =
     let rec aux c ts ts' = match ts, ts' with
     | t :: ts, t' :: ts' ->
-	if c <> 0 then aux c ts ts' else aux (compare t t') ts ts'
+        if c <> 0 then aux c ts ts' else aux (compare t t') ts ts'
     | [], [] -> c
     | [], t' -> -1
     | t, [] -> 1
@@ -713,13 +714,13 @@ module Wlocale = struct
       | _ -> acc (* note, we don't report syntax errors here. *)
     in
     let rec aux acc = function
-      | ((`List ((`Atom "w.locales", _) :: locs), _) :: es) :: up ->
-	  aux (List.fold_left add acc locs) (es :: up)
-      | ((`Atom _, _) :: es) :: up -> aux acc (es :: up)
-      | ((`List l, _) :: es) :: up -> aux acc (l :: es :: up)
-      | [] :: [] -> acc
-      | [] :: up -> aux acc up
-      | _ -> assert false
+    | ((`List ((`Atom "w.locales", _) :: locs), _) :: es) :: up ->
+        aux (List.fold_left add acc locs) (es :: up)
+    | ((`Atom _, _) :: es) :: up -> aux acc (es :: up)
+    | ((`List l, _) :: es) :: up -> aux acc (l :: es :: up)
+    | [] :: [] -> acc
+    | [] :: up -> aux acc up
+    | _ -> assert false
     in
     (aux Aset.empty (es :: []))
 end
@@ -735,8 +736,8 @@ module Wdep = struct
 
     let compare d d' = match d, d' with
     | `Val ((i, _), (k, _)), `Val ((i', _), (k', _)) ->
-	let c = Pervasives.compare i i' in
-	if c <> 0 then c else Pervasives.compare k k'
+        let c = Pervasives.compare i i' in
+        if c <> 0 then c else Pervasives.compare k k'
     | `Map (a, _), `Map (a', _)
     | `File (a, _), `File (a', _)
     | `Other (a, _), `Other (a', _) -> Pervasives.compare a a'
@@ -746,17 +747,17 @@ module Wdep = struct
   type t = Dep.t
   let compare = compare
   let pp ppf = function
-    | `File f -> pr ppf "file:%a" Se.pp_atom f
-    | `Map id -> pr ppf "map:%a" Se.pp_atom id
-    | `Val (id, key) -> pr ppf "val:%a:%a" Se.pp_atom id Se.pp_atom key
-    | `Other o -> pr ppf "other:%a" Se.pp_atom o
+  | `File f -> pr ppf "file:%a" Se.pp_atom f
+  | `Map id -> pr ppf "map:%a" Se.pp_atom id
+  | `Val (id, key) -> pr ppf "val:%a:%a" Se.pp_atom id Se.pp_atom key
+  | `Other o -> pr ppf "other:%a" Se.pp_atom o
 
   module Set = struct
     include Set.Make (Dep)
 
     let vals_as_maps ds =
       let add e acc = match e with `Val (id, _) -> add (`Map id) acc
-      | d -> add d acc
+                                 | d -> add d acc
       in
       fold add ds empty
 
@@ -770,12 +771,12 @@ end
 
 module Wuri = struct
   type t = { uri : atom; path : atom; locale : Wlocale.t option;
-	     dict : Dict.t }
+             dict : Dict.t }
 
   let check (`Atom ps, _ as path) loc =
     let check_path = Filename.is_relative ps in
     let check_loc, loc = match loc with None -> true, Se.atom ""
-    | Some l -> Wlocale.is_locale l, l
+                                      | Some l -> Wlocale.is_locale l, l
     in
     if not check_path then Wlog.err (err_uri_path path);
     if not check_loc then Wlog.err (err_uri_loc loc);
@@ -811,11 +812,13 @@ module Wuri = struct
     let find uri us = try Some (Amap.find uri us) with
     | Not_found -> None
 
-    let get uri us = match find uri us with Some u -> u
+    let get uri us = match find uri us with
+    | Some u -> u
     | None -> invalid_arg (err_uri_unbound uri)
 
     let add u us = Amap.add u.uri u us
-    let add_opt u us = match u with None -> us
+    let add_opt u us = match u with
+    | None -> us
     | Some u -> Amap.add u.uri u us
 
     let rem u us = Amap.remove u.uri us
@@ -885,13 +888,13 @@ module Wctx = struct
   (* Contexts *)
 
   type t =
-      { db : (t -> id -> Bset.t option);        (* function to look up maps. *)
-	subst : Bset.t;                               (* atom substitutions. *)
-	record_deps : bool;               (* activate direct deps recording. *)
-	deps : Wdep.Set.t ref;             (* all deps seen, ugly but works. *)
-	seen : Wdep.Set.t;    (* dependencies in callstack for cycle detect. *)
-	trace : dict list;                                     (* callstack. *)
-	err_locale : bool; }      (* true to report error on missing locale. *)
+    { db : (t -> id -> Bset.t option);        (* function to look up maps. *)
+      subst : Bset.t;                               (* atom substitutions. *)
+      record_deps : bool;               (* activate direct deps recording. *)
+      deps : Wdep.Set.t ref;             (* all deps seen, ugly but works. *)
+      seen : Wdep.Set.t;    (* dependencies in callstack for cycle detect. *)
+      trace : dict list;                                     (* callstack. *)
+      err_locale : bool; }      (* true to report error on missing locale. *)
 
   module Private = struct
     let create ?locale ?conf db (id : atom) =
@@ -907,7 +910,7 @@ module Wctx = struct
       | Some l -> Bset.add subst Bset.Key.w_loc [(l :> se)]
       in
       { db; subst; record_deps = false; deps = ref Wdep.Set.empty;
-	seen = Wdep.Set.empty; trace = []; err_locale = true }
+        seen = Wdep.Set.empty; trace = []; err_locale = true }
   end
 
   let record_deps c = { c with record_deps = true; deps = ref Wdep.Set.empty }
@@ -930,12 +933,12 @@ module Wctx = struct
   | None -> { c with subst = Bset.rem c.subst Bset.Key.w_loc; err_locale = err }
   | Some loc ->
       { c with subst = Bset.add c.subst Bset.Key.w_loc [(loc :> se)];
-	err_locale = err }
+               err_locale = err }
 
   let push_trace c (`Val (id, _) as dep) t =
     let subst = Bset.add c.subst Bset.Key.w_self [(id :> se)] in
     { c with subst; seen = Wdep.Set.add dep c.seen;
-      trace = List.rev_append (List.rev t) c.trace; }
+             trace = List.rev_append (List.rev t) c.trace; }
 
   let dict_with_trace d t = Dict.add d Dict.Key.trace t
 
@@ -951,58 +954,58 @@ module Wctx = struct
 
   let p_map_spec c = type_map_spec, function      (* ID or list of bindings. *)
     | `Atom _, _ as id ->
-	begin match find_map c id with
-	| None -> Wlog.err (`Undefined_map id); `Error
-	| Some m -> `Ok (Some id, m)
-	end
+        begin match find_map c id with
+        | None -> Wlog.err (`Undefined_map id); `Error
+        | Some m -> `Ok (Some id, m)
+        end
     | e ->
-	match (snd (Bset.p_bindings ~robust:false)) e with
-	| `Error -> `Error | `Ok m -> `Ok (None, m)
+        match (snd (Bset.p_bindings ~robust:false)) e with
+        | `Error -> `Error | `Ok m -> `Ok (None, m)
 
   let rec eval c es dict =
     let push v acc = (v :: List.hd acc) :: List.tl acc in
     let push_list l acc = List.rev_append l (List.hd acc) :: List.tl acc in
     let rec aux c todo acc dicts lastd = match todo with
     | (e :: es) :: todo ->
-	begin match e with
-	| `Atom _, dict as at ->
-	    let dict = dict_with_trace dict c.trace in
-	    let with_dict (e, _) = (e, dict) in
-	    begin match Bset.find c.subst at with
-	    | None -> aux c (es :: todo) (push (with_dict at) acc) dicts dict
-	    | Some (l, d) ->
-		let l = List.rev_map with_dict l in
-		aux c (es :: todo) (push_list l acc) dicts dict
-	    end
-	| `List l, dict  ->
-	    let dict = dict_with_trace dict c.trace in
-	    begin match l with
-	    | (`Atom dir, _) :: args as l ->
-		let eval_dir = match dir with
-		| "w.get" -> Some (eval_get c ~opt:false args dict)
-		| "w.opt-get" -> Some (eval_get c ~opt:true args dict)
-		| "w.cond" -> Some (eval_cond c args dict)
-		| "w.locales" -> Some (eval_locales c l dict)
-		| "w.with-loc" -> Some (eval_with_loc c ~opt:false args dict)
-		| "w.opt-with-loc" -> Some (eval_with_loc c ~opt:true args dict)
-		| "w.seq" ->	Some (eval_seq c args dict)
-		| "w.time" -> Some (eval_time c args dict)
-		| "w.uuid" -> Some (eval_uuid c args dict)
-		| k -> None
-		in
-		begin match eval_dir with
-		| Some (seq, lastd) ->
-		    aux c (es :: todo) (push_list seq acc) dicts lastd
-		| None ->
-		    aux c (l :: es :: todo) ([] :: acc) (dict :: dicts) lastd
-		end
-	    | l -> aux c (l :: es :: todo) ([] :: acc) (dict :: dicts) lastd
-	    end
-	end
+        begin match e with
+        | `Atom _, dict as at ->
+            let dict = dict_with_trace dict c.trace in
+            let with_dict (e, _) = (e, dict) in
+            begin match Bset.find c.subst at with
+            | None -> aux c (es :: todo) (push (with_dict at) acc) dicts dict
+            | Some (l, d) ->
+                let l = List.rev_map with_dict l in
+                aux c (es :: todo) (push_list l acc) dicts dict
+            end
+        | `List l, dict  ->
+            let dict = dict_with_trace dict c.trace in
+            begin match l with
+            | (`Atom dir, _) :: args as l ->
+                let eval_dir = match dir with
+                | "w.get" -> Some (eval_get c ~opt:false args dict)
+                | "w.opt-get" -> Some (eval_get c ~opt:true args dict)
+                | "w.cond" -> Some (eval_cond c args dict)
+                | "w.locales" -> Some (eval_locales c l dict)
+                | "w.with-loc" -> Some (eval_with_loc c ~opt:false args dict)
+                | "w.opt-with-loc" -> Some (eval_with_loc c ~opt:true args dict)
+                | "w.seq" ->  Some (eval_seq c args dict)
+                | "w.time" -> Some (eval_time c args dict)
+                | "w.uuid" -> Some (eval_uuid c args dict)
+                | k -> None
+                in
+                begin match eval_dir with
+                | Some (seq, lastd) ->
+                    aux c (es :: todo) (push_list seq acc) dicts lastd
+                | None ->
+                    aux c (l :: es :: todo) ([] :: acc) (dict :: dicts) lastd
+                end
+            | l -> aux c (l :: es :: todo) ([] :: acc) (dict :: dicts) lastd
+            end
+        end
     | [] :: [] -> List.rev (List.hd acc), lastd
     | [] :: todo ->
-	let l = Se.list ~d:(List.hd dicts) (List.rev (List.hd acc)) in
-	aux c todo (push l (List.tl acc)) (List.tl dicts) lastd
+        let l = Se.list ~d:(List.hd dicts) (List.rev (List.hd acc)) in
+        aux c todo (push l (List.tl acc)) (List.tl dicts) lastd
     | _ -> assert false
     in
     aux c (es :: []) ([] :: []) [] (dict_with_trace dict c.trace)
@@ -1011,15 +1014,15 @@ module Wctx = struct
   and eval_next : 'a. ?last:bool -> 'a Se.parser -> t -> se list -> dict ->
     'a * se list =
     fun ?(last = false) p c es dict -> match es with
-      | e :: es ->
-	  if last && es <> [] then
-	    let unexpected = List.hd es in
-	    let d = dict_with_trace (snd unexpected) (dict :: c.trace) in
-	    (Wlog.err (exp_eol (Se.with_dict ~d unexpected)); raise Exit)
-	  else
-	    let v, dict = eval c [e] dict in
-	    fst (Se.pnext ~last:true p v dict), es
-      | [] -> Se.pnext ~last:true p [] dict (* logs error and raises Exit *)
+    | e :: es ->
+        if last && es <> [] then
+          let unexpected = List.hd es in
+          let d = dict_with_trace (snd unexpected) (dict :: c.trace) in
+          (Wlog.err (exp_eol (Se.with_dict ~d unexpected)); raise Exit)
+        else
+        let v, dict = eval c [e] dict in
+        fst (Se.pnext ~last:true p v dict), es
+    | [] -> Se.pnext ~last:true p [] dict (* logs error and raises Exit *)
 
   (* evaluates the w.get and w.opt-get directives *)
   and eval_get c ~opt es d = try
@@ -1028,28 +1031,29 @@ module Wctx = struct
     let key, _ = eval_next ~last:true (Se.p_atom type_key) c es d in
     match Bset.find m key with
     | None ->
-	if opt then begin
-	  match id with None -> raise Exit
-	  | Some id ->
-	      let dep = `Val (id, key) in
-	      add_dep c dep; raise Exit (* no error *)
-	end else
-	let map = match id with
-	| None -> Bset.to_bindings m
-	| Some (`Atom id, d) ->
-	    let t = d :: Dict.get d Dict.Key.trace in (* trace to id *)
-	    Se.atom ~d:(dict_with_trace (Bset.dict m) t) id
-	in
-	Wlog.err (`Undefined_key (map, key)); raise Exit
+        if opt then begin
+          match id with
+          | None -> raise Exit
+          | Some id ->
+              let dep = `Val (id, key) in
+              add_dep c dep; raise Exit (* no error *)
+        end else
+        let map = match id with
+        | None -> Bset.to_bindings m
+        | Some (`Atom id, d) ->
+            let t = d :: Dict.get d Dict.Key.trace in (* trace to id *)
+            Se.atom ~d:(dict_with_trace (Bset.dict m) t) id
+        in
+        Wlog.err (`Undefined_key (map, key)); raise Exit
     | Some (es, bd as b) ->
-	match id with
-	| None -> b                      (* list of bindings, already eval'd *)
-	| Some id ->                                           (* map lookup *)
-	    let dep = `Val (id, key) in
-	    if Wdep.Set.mem dep c.seen then
-	      (Wlog.err (err_circular d); raise Exit)
-	    else
-	      (add_dep c dep; eval (push_trace c dep [d]) es bd)
+        match id with
+        | None -> b                      (* list of bindings, already eval'd *)
+        | Some id ->                                           (* map lookup *)
+            let dep = `Val (id, key) in
+            if Wdep.Set.mem dep c.seen then
+              (Wlog.err (err_circular d); raise Exit)
+            else
+            (add_dep c dep; eval (push_trace c dep [d]) es bd)
   with Exit -> [], d
 
   (* evaluates the w.cond directive *)
@@ -1061,17 +1065,17 @@ module Wctx = struct
       match acc with
       | Some _ -> (* branch already found, continue for syntax check. *) acc
       | None ->
-	  match cond' with
-	  | `Atom "w.default", _ -> Some (branch, dict)
-	  | cond' -> if Se.equal cond cond' then Some (branch, dict) else None
+          match cond' with
+          | `Atom "w.default", _ -> Some (branch, dict)
+          | cond' -> if Se.equal cond cond' then Some (branch, dict) else None
     in
     let cond, branches = eval_next (Se.p_se type_cond) c es dict in
     match List.fold_left (find_branch cond) None branches with
     | Some (branch, dict) -> eval c branch dict
     | None ->
-	let t = (snd cond) :: Dict.get (snd cond) Dict.Key.trace in
-	let dict = dict_with_trace dict t in (* directive + trace to cond *)
-	Wlog.err (err_cond_match (Se.to_string cond) dict); raise Exit
+        let t = (snd cond) :: Dict.get (snd cond) Dict.Key.trace in
+        let dict = dict_with_trace dict t in (* directive + trace to cond *)
+        Wlog.err (err_cond_match (Se.to_string cond) dict); raise Exit
   with Exit -> [], dict
 
   (* evaluates the w.locales directive *)
@@ -1083,35 +1087,36 @@ module Wctx = struct
       match Bset.find rset r with              (* checks no same range twice *)
       | None -> (branch, bd) :: acc, Bset.add ~d:(snd r) rset r []
       | Some (_, d1) ->
-	  let `Atom range, d2 = r in
-	  Wlog.err (err_range_twice range d d1 d2);
-	  raise Exit
+          let `Atom range, d2 = r in
+          Wlog.err (err_range_twice range d d1 d2);
+          raise Exit
     in
     let branches, _ =
       List.fold_left branch ([], Bset.empty Dict.empty) (List.tl dir)
     in
     match locale c with
     | None ->
-	let eval_branch acc ((range, branch), d) =
-	  Se.list ~d (range :: fst (eval c branch d)) :: acc
-	in
-	let branches = List.fold_left eval_branch [] branches in
-	[Se.list ~d (List.hd dir :: branches)], d
+        let eval_branch acc ((range, branch), d) =
+          Se.list ~d (range :: fst (eval c branch d)) :: acc
+        in
+        let branches = List.fold_left eval_branch [] branches in
+        [Se.list ~d (List.hd dir :: branches)], d
     | Some l ->
-	let loc = Wlocale.subtags l in
-	let find_branch acc ((range, branch), d) =
-	  let range = Wlocale.subtags range in
-	  if not (Wlocale._matches loc range) then acc else
-	  match acc with None -> Some (range, branch, d)
-	  | Some (range', _, _) ->
-	      if Wlocale._compare range range' < 0 then acc else
-	      Some (range, branch, d)
-	in
-	match List.fold_left find_branch None branches with
-	| Some (_, branch, d) -> eval c branch d
-	| None ->
-	    if not (c.err_locale) then [], d else
-	    (Wlog.err (err_locale_match l d); raise Exit)
+        let loc = Wlocale.subtags l in
+        let find_branch acc ((range, branch), d) =
+          let range = Wlocale.subtags range in
+          if not (Wlocale._matches loc range) then acc else
+          match acc with
+          | None -> Some (range, branch, d)
+          | Some (range', _, _) ->
+              if Wlocale._compare range range' < 0 then acc else
+              Some (range, branch, d)
+        in
+        match List.fold_left find_branch None branches with
+        | Some (_, branch, d) -> eval c branch d
+        | None ->
+            if not (c.err_locale) then [], d else
+            (Wlog.err (err_locale_match l d); raise Exit)
   with Exit -> [], d
 
   (* evaluates the w.with-loc and w.opt-with-loc directives. *)
@@ -1141,9 +1146,9 @@ module Wctx = struct
       | (`Atom "eval", _) :: es -> ieval := Some (es, d)
       | (`Atom "sort-key", _) :: k -> sort_key := Some (k, d)
       | (`Atom "reverse-sort", _) :: rs ->
-	  reverse_sort := fst (eval_next ~last:true Se.p_bool c rs d)
+          reverse_sort := fst (eval_next ~last:true Se.p_bool c rs d)
       | (`Atom "limit", _) :: ls ->
-	  limit := Some (fst (eval_next ~last:true Se.p_pos_int c ls d))
+          limit := Some (fst (eval_next ~last:true Se.p_pos_int c ls d))
       | _ -> Wlog.err (exp_this type_seq_spec l)
     in
     List.iter parse es;
@@ -1158,27 +1163,27 @@ module Wctx = struct
     let items = match !items with
     | None -> Wlog.err (err_seq_miss "items" d); raise Exit
     | Some (is, d) ->
-	let items, _ = eval c is d in
-	match sort_key with
-	| None -> items
-	| Some sort_key ->
-	    let kis = List.rev_map (fun i -> sort_key i, i) items in
-	    let sort =
-	      if !reverse_sort then fun (k, _) (k', _) -> Se.compare k k'
-	      else fun (k, _) (k', _) -> Se.compare k' k
-	    in
-	    List.rev_map snd (List.stable_sort sort kis)
+        let items, _ = eval c is d in
+        match sort_key with
+        | None -> items
+        | Some sort_key ->
+            let kis = List.rev_map (fun i -> sort_key i, i) items in
+            let sort =
+              if !reverse_sort then fun (k, _) (k', _) -> Se.compare k k'
+              else fun (k, _) (k', _) -> Se.compare k' k
+            in
+            List.rev_map snd (List.stable_sort sort kis)
     in
     let mapped_items = match !limit with
     | None -> List.rev (List.rev_map ieval items)
     | Some max ->
-	let rec keep count acc items =
-	  if count = 0 then acc else
-	  match items with
-	  | i :: is -> keep (count - 1) ((ieval i) :: acc) is
-	  | [] -> acc
-	in
-	List.rev (keep max [] items)
+        let rec keep count acc items =
+          if count = 0 then acc else
+          match items with
+          | i :: is -> keep (count - 1) ((ieval i) :: acc) is
+          | [] -> acc
+        in
+        List.rev (keep max [] items)
     in
     List.flatten mapped_items, d
   with Exit -> [], d
@@ -1218,15 +1223,15 @@ module Wctx = struct
   with Exit -> [], d
 
  and eval_uuid c es d = try match es with
-  | [] -> [Se.atom (Uuidm.to_string (Uuidm.create `V4))], d
-  | es ->
-      let ns, es = eval_next Se.p_uuid c es d in
-      let name, d = eval c es d in  (* TODO better error *)
-      let name = match Setext.to_string name with
-      | "" -> Wlog.err (err_eval_uuid_name d) ; raise Exit
-      | n -> n
-      in
-      [Se.atom (Uuidm.to_string (Uuidm.create (`V5 (ns, name))))], d
+ | [] -> [Se.atom (Uuidm.to_string (Uuidm.create `V4))], d
+ | es ->
+     let ns, es = eval_next Se.p_uuid c es d in
+     let name, d = eval c es d in  (* TODO better error *)
+     let name = match Setext.to_string name with
+     | "" -> Wlog.err (err_eval_uuid_name d) ; raise Exit
+     | n -> n
+     in
+     [Se.atom (Uuidm.to_string (Uuidm.create (`V5 (ns, name))))], d
  with Exit -> [], d
 end
 
@@ -1284,24 +1289,25 @@ module Wformat = struct
     | `Required -> str "$(b,%s) (required)" k
     | `Optional (None | Some []) -> str "$(b,%s)" k
     | `Optional Some l ->
-	str "$(b,%s) (defaults to %s)" k
-	  (String.concat " " (List.map Se.to_string l))
+        str "$(b,%s) (defaults to %s)" k
+          (String.concat " " (List.map Se.to_string l))
     in
     `I (label, doc)
 
   let rec merge_keys_section acc insert keys = function
-    | `S _ as s :: bs ->
-	let acc = if insert then List.rev_append keys acc else acc in
-	merge_keys_section (s :: acc) (s = man_description) keys bs
-    | b :: bs -> merge_keys_section (b :: acc) insert keys bs
-    | [] -> if insert then List.rev_append keys acc else acc
+  | `S _ as s :: bs ->
+      let acc = if insert then List.rev_append keys acc else acc in
+      merge_keys_section (s :: acc) (s = man_description) keys bs
+  | b :: bs -> merge_keys_section (b :: acc) insert keys bs
+  | [] -> if insert then List.rev_append keys acc else acc
 
   let man fM =
     let module F = (val fM : T) in
     let rev_cmp ((`Atom k, _), _, _) ((`Atom k', _), _, _) = compare k' k in
     let keys = List.sort rev_cmp F.keys in
-    let keys = if keys = [] then [] else
-             man_keys :: (List.rev_map man_key keys)
+    let keys =
+      if keys = [] then [] else
+      man_keys :: (List.rev_map man_key keys)
     in
     let name_p =
       let `Atom name, _ = F.name in
@@ -1319,7 +1325,7 @@ module Wformat = struct
     let man = [
       man_description;
       `P "The format $(b,w.map) is the default map format. It can be used to
-	  share definitions across maps.";
+    share definitions across maps.";
       man_uri_set;
       `P "The URI set is empty."]
 
@@ -1378,9 +1384,9 @@ module Wformat = struct
           and determines its locales. Each locale defines an URI and the locale
           of its content.";
       `P "If the $(b,uri-path) key is present, its @-text defines the path for
- 	  the URI content. In conjunction with suitable webserver URI rewrites,
+    the URI content. In conjunction with suitable webserver URI rewrites,
           this allows to entirely decouple the URI from its content path
-	  and define a \"clean\" URI in $(b,uri) for map cross-references."; ]
+    and define a \"clean\" URI in $(b,uri) for map cross-references."; ]
 
     let keys = [
       Bset.Key.uri, `Required,
@@ -1390,14 +1396,14 @@ module Wformat = struct
 
     let uri_set c m =
       let uri locale =
-	let c = Wctx.with_locale c locale in
-	let es, d = wmap_get c m Bset.Key.uri in
-	let uri = Setext.to_atom (`List es, d) in
-	let path = match wmap_find c m Bset.Key.uri_path with
-	| Some (es, d) -> Setext.to_atom (`List es, d)
-	| None -> uri
-	in
-	Wuri.create ~d:(Bset.dict m) uri path locale
+        let c = Wctx.with_locale c locale in
+        let es, d = wmap_get c m Bset.Key.uri in
+        let uri = Setext.to_atom (`List es, d) in
+        let path = match wmap_find c m Bset.Key.uri_path with
+        | Some (es, d) -> Setext.to_atom (`List es, d)
+        | None -> uri
+        in
+        Wuri.create ~d:(Bset.dict m) uri path locale
       in
       let locs = wmap_locales c m Bset.Key.uri in
       if Aset.is_empty locs then Wuri.Set.add_opt (uri None) Wuri.Set.empty else
@@ -1429,18 +1435,18 @@ module Wmap = struct
 
     let add_format_keys ks m = try
       let add m (k, i, _) =
-	if Bset.Key.is_reserved k then
-	  (Wlog.err (msg_format_key (format m) k); raise Exit)
-	else match i with
-	| `Derived | `Optional None -> m
-	| `Required ->
-	    begin match Bset.find m k with
-	    | Some _ -> m
-	    | None -> Wlog.err (`Undefined_key ((id m :> se), k)); raise Exit
-	    end
-	| `Optional (Some v) ->                     (* optional with default. *)
-	    match Bset.find m k with Some _ -> m
-	    | None -> Bset.add ~d:(Bset.dict m) m k v
+        if Bset.Key.is_reserved k then
+          (Wlog.err (msg_format_key (format m) k); raise Exit)
+        else match i with
+        | `Derived | `Optional None -> m
+        | `Required ->
+            begin match Bset.find m k with
+            | Some _ -> m
+            | None -> Wlog.err (`Undefined_key ((id m :> se), k)); raise Exit
+            end
+        | `Optional (Some v) ->                     (* optional with default. *)
+            match Bset.find m k with Some _ -> m
+                                   | None -> Bset.add ~d:(Bset.dict m) m k v
       in
       `Ok (List.fold_left add m ks)
     with Exit -> `Error
@@ -1461,44 +1467,44 @@ module Wmap = struct
     let parse_includes_key m = match Bset.find m Bset.Key.w_includes with
     | None -> [], Dict.empty
     | Some (es, d) ->
-	let ids = [Se.list ~d es] in
-	(fst (Se.pnext ~err:[] (Se.p_list_of (Se.p_atom type_id)) ids d)), d
+        let ids = [Se.list ~d es] in
+        (fst (Se.pnext ~err:[] (Se.p_list_of (Se.p_atom type_id)) ids d)), d
 
     let parse_format_key id m =
       let err = Wformat.Default.name in
       match Bset.find m Bset.Key.w_format with
       | Some (es, d) ->
-	  fst (Se.pnext ~err ~last:true (Se.p_atom type_format) es d)
+          fst (Se.pnext ~err ~last:true (Se.p_atom type_format) es d)
       | None -> Wlog.err (`Undefined_key ((id :> se), Bset.Key.w_format)); err
 
     let include_includes c id incs m =
       let include_map c acc id =
-	let dep = `Val (id, Bset.Key.w_id) in
-	if Wdep.Set.mem dep c.Wctx.seen then (* circular includes detection. *)
-	  begin
-	    let d = Wctx.dict_with_trace (snd id) c.Wctx.trace in
-	    Wlog.err (err_circular d); acc
-	  end
-	else
-	  let c = Wctx.push_trace c dep [(snd id)] in
-	  match Wctx.find_map c id with
-	  | None -> Wlog.err (`Undefined_map id); acc
-	  | Some m ->
-	      let add acc k v d = (* trace the origin of include *)
-		let t = (snd id) :: match Dict.find d Dict.Key.trace with
-		| None -> [Bset.dict m]
-		| Some t -> t
-		in
-		let d = Wctx.dict_with_trace (snd id) t in
-		Bset.add ~d acc k v
-	      in
-	      Bset.fold add acc m
+        let dep = `Val (id, Bset.Key.w_id) in
+        if Wdep.Set.mem dep c.Wctx.seen then (* circular includes detection. *)
+          begin
+            let d = Wctx.dict_with_trace (snd id) c.Wctx.trace in
+            Wlog.err (err_circular d); acc
+          end
+        else
+        let c = Wctx.push_trace c dep [(snd id)] in
+        match Wctx.find_map c id with
+        | None -> Wlog.err (`Undefined_map id); acc
+        | Some m ->
+            let add acc k v d = (* trace the origin of include *)
+              let t = (snd id) :: match Dict.find d Dict.Key.trace with
+                | None -> [Bset.dict m]
+                | Some t -> t
+              in
+              let d = Wctx.dict_with_trace (snd id) t in
+              Bset.add ~d acc k v
+            in
+            Bset.fold add acc m
       in
       let m0 = Bset.empty (Bset.dict m) in
       let mi = List.fold_left (include_map c) m0 (fst incs) in
       Bset.fold (fun a k v d ->
-	let d = Wctx.dict_with_trace d [d] in
-	Bset.add ~d a k v) mi m
+          let d = Wctx.dict_with_trace d [d] in
+          Bset.add ~d a k v) mi m
 
     let add_creation_deps c m =
       let deps = Wctx.deps c in
