@@ -1,13 +1,21 @@
-opam-version: "1"
+opam-version: "1.2"
 maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
 homepage: "http://erratique.ch/repo/webglue"
+dev-repo: "http://erratique.ch/repo/webglue.git"
+bug-reports: "https://github.com/dbuenzli/webglue/issues"
 authors: ["Daniel Bünzli <daniel.buenzl i@erratique.ch>"]
-license: "BSD3"
-ocaml-version: [>= "4.00.0"]
-depends: [ "cmdliner" "uuidm" ]
+license: "ISC"
+available: [ ocaml-version >= "4.01.0" ]
 tags: [ "org:erratique" ]
-build: [
-  [ "pkg/pkg-git" ]
-  [ "pkg/configure" lib ]
-  [ "pkg/build" "true" ]
+depends: [
+  "ocamlfind" {build}
+  "ocamlbuild" {build}
+  "topkg" {build}
+  "cmdliner"
+  "uuidm"
 ]
+build: [[
+   "ocaml" "pkg/pkg.ml" "build"
+           "--pinned" "%{pinned}%"
+           "--lib-dir" webglue:lib
+]]

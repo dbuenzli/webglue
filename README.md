@@ -1,6 +1,6 @@
 Webglue — Command line tool to build static websites
 -------------------------------------------------------------------------------
-Release %%VERSION%%
+%%VERSION%%
 
 Webglue is a command line tool to build static websites.
 
@@ -15,7 +15,7 @@ URIs containing XML, HTML, CSS, UTF-8 text, search engine sitemaps and
 raw files. New formats can be defined by dynamically loaded plugins
 via the webglue API.
 
-Webglue is distributed under the BSD3 license.
+Webglue is distributed under the ISC license.
 
 Home page: http://erratique.ch/repo/webglue  
 Contact: Daniel Bünzli `<daniel.buenzl i@erratique.ch>`  
@@ -27,8 +27,8 @@ Dogfooding: http://erratique.ch
 
 Webglue can be installed with `opam`
 
-    opam add erratique-u http://erratique.ch/software/opam/unreleased
-    opam update
+
+    opam pin add webglue http://erratique.ch/repos/webglue.git
     opam install webglue
 
 
