@@ -1075,7 +1075,7 @@ module Wformat : sig
 
   type man_block =
     [ `S of string | `P of string | `Pre of string | `I of string * string
-    | `Noblank ]
+    | `Noblank | `Blocks of man_block list ]
   (** The type for man page blocks. *)
 
   (** The type for a map format.

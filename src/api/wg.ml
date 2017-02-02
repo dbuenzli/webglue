@@ -1262,7 +1262,7 @@ module Wformat = struct
   type key_info = [ `Required | `Optional of se list option | `Derived ]
   type man_block =
     [ `S of string | `P of string | `Pre of string | `I of string * string
-    | `Noblank ]
+    | `Noblank | `Blocks of man_block list ]
 
   module type T = sig
     val name : format
