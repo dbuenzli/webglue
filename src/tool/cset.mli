@@ -6,7 +6,7 @@
 
 (** The [set] command. *)
 
-val cmd : unit Cmdliner.Term.t * Cmdliner.Term.info
+val cmd : unit Cmdliner.Cmd.t
 
 (*---------------------------------------------------------------------------
    Copyright (c) 2011 Daniel C. Bünzli

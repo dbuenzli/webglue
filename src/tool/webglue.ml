@@ -43,11 +43,14 @@ let man = [
   `P "$(b,webglue-directives)(7), $(b,webglue-formats)(5),
       $(b,webglue-maps)(5)" ]
 
-let info = Term.info "webglue" ~version ~doc ~sdocs:C.copts_sec ~man
-let default = Term.(ret (pure (fun _ -> `Help (`Pager, None)) $ C.copts))
-let main () = match Term.eval_choice (default, info) cmds with
-| `Error _ -> exit 1
-| _ ->  if Wlog.Private.errors () > 0 then exit 1 else exit 0
+let tool =
+  let default = Term.(ret (const (fun _ -> `Help (`Pager, None)) $ C.copts)) in
+  Cmd.group (Cmd.info "webglue" ~version ~doc ~sdocs:C.copts_sec ~man)
+    ~default cmds
+
+let main () = match Cmd.eval_value tool with
+| Error _ -> exit 1
+| Ok _ ->  if Wlog.Private.errors () > 0 then exit 1 else exit 0
 
 let () = main ()
 

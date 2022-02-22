@@ -13,7 +13,7 @@ open Wg
 type 'a formatter = Format.formatter -> 'a -> unit
 (** The type for formatters of values of type ['a]. *)
 
-val pp : Format.formatter -> ('a, Format.formatter, unit) Pervasives.format ->
+val pp : Format.formatter -> ('a, Format.formatter, unit) Stdlib.format ->
   'a
 (** [pp] is {!Format.fprintf} *)
 
@@ -49,7 +49,7 @@ val pp_range : ((int * int) * (int * int)) formatter
 
 (** {1 String converters} *)
 
-val str : ('a, unit, string) Pervasives.format -> 'a
+val str : ('a, unit, string) Stdlib.format -> 'a
 (** [str] is {!Format.fprintf}. *)
 
 val to_str_converter : 'a formatter -> ('a -> string)

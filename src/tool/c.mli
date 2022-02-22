@@ -11,7 +11,7 @@ open Cmdliner
 
 (** {1 Argument converters} *)
 
-val atom : atom Arg.converter
+val atom : atom Arg.conv
 
 (** {1 Optional arguments for every command} *)
 

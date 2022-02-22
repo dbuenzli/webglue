@@ -37,9 +37,10 @@ let man = [
   `S "SEE ALSO";
   `P "$(b,webglue-content)(1), $(b,webglue-maps)(5)" ]
 
-let info = Term.info "uriset" ~sdocs:C.copts_sec ~doc ~man
+
 let cmd =
-  Term.(pure uriset $ C.context ~locale_opt:false $ C.output $ out_kind), info
+  Cmd.v (Cmd.info "uriset" ~sdocs:C.copts_sec ~doc ~man)
+    Term.(const uriset $ C.context ~locale_opt:false $ C.output $ out_kind)
 
 (*---------------------------------------------------------------------------
    Copyright (c) 2011 Daniel C. Bünzli

@@ -17,7 +17,7 @@ let man_of_format f = match Wformat.Private.find (Se.atom f) with
       let `Atom name, _  = F.name in
       let left_foot = (Fmt.str "%s %s" name F.version) in
       let center_head = format_manual in
-      let name = String.uppercase name in
+      let name = String.uppercase_ascii name in
       name, 5, "", left_foot, center_head
     in
     `Ok (title, Wformat.man fM)
@@ -421,8 +421,8 @@ let man = [
   `P "$(b,webglue)(1)"; ]
 
 let cmd =
-  Term.(ret (pure help $ C.copts $ Term.man_format $ topic $ Term.choice_names))
-    ,Term.info "help" ~sdocs:C.copts_sec ~doc ~man
+  Cmd.v (Cmd.info "help" ~sdocs:C.copts_sec ~doc ~man)
+    Term.(ret (const help $ C.copts $ Arg.man_format $ topic $ Term.choice_names))
 
 (*---------------------------------------------------------------------------
    Copyright (c) 2011 Daniel C. Bünzli

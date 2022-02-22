@@ -67,10 +67,11 @@ let man = [
   `S "SEE ALSO";
   `P "$(b,webglue-directives)(7), $(b,webglue-maps)(5), $(b,webglue-set)(1)" ]
 
-let info = Term.info "get" ~sdocs:C.copts_sec ~doc ~man
+
 let cmd =
-  Term.(pure get $ C.context ~locale_opt:true $ C.output $ C.key_opt $
-          out_kind), info
+    Cmd.v (Cmd.info "get" ~sdocs:C.copts_sec ~doc ~man)
+      Term.(const get $ C.context ~locale_opt:true $ C.output $ C.key_opt $
+            out_kind)
 
 (*---------------------------------------------------------------------------
    Copyright (c) 2011 Daniel C. Bünzli

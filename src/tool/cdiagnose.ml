@@ -30,8 +30,10 @@ let man = [
   `S "SEE ALSO";
   `P "$(b,webglue-maps)(5), $(b,webglue-uriset)(1)" ]
 
-let info = Term.info "diagnose" ~sdocs:C.copts_sec ~doc ~man
-let cmd = Term.(pure diagnose $ C.copts $ C.conf $ C.id_opt $ C.output), info
+
+let cmd =
+  Cmd.v (Cmd.info "diagnose" ~sdocs:C.copts_sec ~doc ~man)
+    Term.(const diagnose $ C.copts $ C.conf $ C.id_opt $ C.output)
 
 (*---------------------------------------------------------------------------
    Copyright (c) 2011 Daniel C. Bünzli

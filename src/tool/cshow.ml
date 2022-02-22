@@ -46,8 +46,9 @@ let man = [
       searched for formats or maps, available formats and their file,
       or the file of a map ID." ] @ C.copts_man
 
-let info = Term.info "show" ~sdocs:C.copts_sec ~doc ~man
-let cmd = Term.(ret (pure show $ C.copts $ C.output $ kind $ entity)), info
+let cmd =
+  Cmd.v (Cmd.info "show" ~sdocs:C.copts_sec ~doc ~man)
+    Term.(ret (const show $ C.copts $ C.output $ kind $ entity))
 
 
 (*---------------------------------------------------------------------------

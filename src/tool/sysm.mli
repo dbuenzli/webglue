@@ -59,7 +59,7 @@ val with_outf : string -> 'a -> (out_channel -> 'a) -> 'a
     If a [Sys_error] occurs it is logged and [err] is returned. *)
 
 val with_outf_pp : string ->
-  ('a, Format.formatter, unit, unit) Pervasives.format4 -> 'a
+  ('a, Format.formatter, unit, unit) Stdlib.format4 -> 'a
 (** [with_outf_pp outf fmt a0 a1 ...] formats [a0], [a1], ...
     according to [fmt] on a formatter opened and closed on [outf]
     ([stdout] and not closed if [f] is ["-"]).

@@ -676,7 +676,7 @@ module Wlocale = struct
     let ts = ref [] in
     while (!i >= 0) do
       let i' = try String.rindex_from l !i '-' with Not_found -> -1 in
-      ts := (String.lowercase (String.sub l (i' + 1) (!i - i'))) :: !ts;
+      ts := (String.lowercase_ascii (String.sub l (i' + 1) (!i - i'))) :: !ts;
       i := i' - 1
     done;
     !ts
@@ -736,12 +736,12 @@ module Wdep = struct
 
     let compare d d' = match d, d' with
     | `Val ((i, _), (k, _)), `Val ((i', _), (k', _)) ->
-        let c = Pervasives.compare i i' in
-        if c <> 0 then c else Pervasives.compare k k'
+        let c = Stdlib.compare i i' in
+        if c <> 0 then c else Stdlib.compare k k'
     | `Map (a, _), `Map (a', _)
     | `File (a, _), `File (a', _)
-    | `Other (a, _), `Other (a', _) -> Pervasives.compare a a'
-    | d, d' -> Pervasives.compare d d'
+    | `Other (a, _), `Other (a', _) -> Stdlib.compare a a'
+    | d, d' -> Stdlib.compare d d'
   end
 
   type t = Dep.t
@@ -1204,7 +1204,7 @@ module Wctx = struct
       k_MM, [Se.atom (str "%02d" mm)];
       k_d, [Se.atom (str "%d" dd)];
       k_dd, [Se.atom (str "%02d" dd)];
-      k_e, [Se.atom (str "%d" (SeUTC.weekday yyyy mm dd))];
+      k_e, [Se.atom (str "%d" (SeUTC.weekday ~y:yyyy ~m:mm ~d:dd))];
       k_a, [Se.atom (if h < 12 then "am" else "pm")];
       k_h, [Se.atom (str "%d" h')];
       k_hh, [Se.atom (str "%02d" h')];
@@ -1223,7 +1223,7 @@ module Wctx = struct
   with Exit -> [], d
 
  and eval_uuid c es d = try match es with
- | [] -> [Se.atom (Uuidm.to_string (Uuidm.create `V4))], d
+ | [] -> [Se.atom (Uuidm.to_string (Uuidm.v `V4))], d
  | es ->
      let ns, es = eval_next Se.p_uuid c es d in
      let name, d = eval c es d in  (* TODO better error *)
@@ -1231,7 +1231,7 @@ module Wctx = struct
      | "" -> Wlog.err (err_eval_uuid_name d) ; raise Exit
      | n -> n
      in
-     [Se.atom (Uuidm.to_string (Uuidm.create (`V5 (ns, name))))], d
+     [Se.atom (Uuidm.to_string (Uuidm.v (`V5 (ns, name))))], d
  with Exit -> [], d
 end
 

@@ -82,7 +82,7 @@ type pos = int * int
 (** The type for input positions, line and column number. *)
 
 type source = [
-  | `Channel of Pervasives.in_channel
+  | `Channel of Stdlib.in_channel
   | `Fun of unit -> int
   | `String of int * string ]
 (** The type for input sources. For [`String] starts reading at the

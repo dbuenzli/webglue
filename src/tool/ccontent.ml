@@ -101,10 +101,10 @@ let man = [
   `S "SEE ALSO";
   `P "$(b,webglue-maps)(5), $(b,webglue-uriset)(1)"; ]
 
-let info = Term.info "content" ~sdocs:C.copts_sec ~doc ~man
 let cmd =
-  Term.(pure content $ C.context ~locale_opt:false $ uri $ C.output $ base $
-	C.recurse $ out_kind), info
+  Cmd.v (Cmd.info "content" ~sdocs:C.copts_sec ~doc ~man)
+    Term.(pure content $ C.context ~locale_opt:false $ uri $ C.output $ base $
+	        C.recurse $ out_kind)
 
 (*---------------------------------------------------------------------------
    Copyright (c) 2011 Daniel C. Bünzli

@@ -148,7 +148,7 @@ let cp_to_string u =                                      (* NOT thread safe. *)
 type result = [ `Uchar of uchar | `Eoi | `Malformed ]
 type pos = int * int
 type source = [
-  | `Channel of Pervasives.in_channel
+  | `Channel of Stdlib.in_channel
   | `Fun of unit -> int
   | `String of int * string ]
 

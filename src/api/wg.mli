@@ -635,7 +635,7 @@ module Wlog : sig
   (** The type for log entries. *)
 
   val msg : ?d:dict ->
-    ('a, Format.formatter, unit, entry) Pervasives.format4 -> 'a
+    ('a, Format.formatter, unit, entry) Stdlib.format4 -> 'a
   (** [msg d fmt a0 a1 ...] is an entry [`Msg (m, d)] with [m]
       formatted according to [fmt] and [a0], [a1], ... [d] defaults
       to {!Dict.empty}. *)
