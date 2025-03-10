@@ -9,7 +9,7 @@ open Cmdliner
 
 (* Argument converters *)
 
-let atom = (fun s -> `Ok (Se.atom s)), Se.pp_atom
+let atom = Arg.conv' ((fun s -> Ok (Se.atom s)), Se.pp_atom)
 
 (* Optional arguments common to all command. *)
 
@@ -70,7 +70,7 @@ let dep_base =
 	 ~docs:copts_sec ~doc )
 
 let copts =
-  Term.(pure copts_with $ verbosity $ formats_dirs $ map_dirs $ dep_base)
+  Term.(const copts_with $ verbosity $ formats_dirs $ map_dirs $ dep_base)
 
 (* Positional arguments common to some commands. *)
 
@@ -100,10 +100,12 @@ let input =
 let doc = "The locale to act on (value of $(b,w.locale))."
 let locale =
   let loc =
-    (fun s ->
-      let l = Se.atom s in if Wlocale.is_locale l then `Ok l else
-    `Error (Fmt.str "invalid value `%s', expected a BCP 47 language tag" s)),
-    Se.pp_atom
+    Arg.conv'
+      ((fun s ->
+          let l = Se.atom s in if Wlocale.is_locale l then Ok l else
+          Error (Fmt.str
+                   "invalid value `%s', expected a BCP 47 language tag" s)),
+       Se.pp_atom)
   in
   Arg.(value & opt (some loc) None & info ["l"; "locale"] ~docv:"LOCALE"~doc)
 
@@ -122,8 +124,8 @@ let context_with copts locale conf id =
     c = Wctx.Private.create ?locale ?conf Map_db.find id }
 
 let context ~locale_opt =
-  let locale = if locale_opt then locale else Term.pure None in
-  Term.(pure context_with $ copts $ locale $ conf $ id)
+  let locale = if locale_opt then locale else Term.const None in
+  Term.(const context_with $ copts $ locale $ conf $ id)
 
 (* Functions common to some commands. *)
 

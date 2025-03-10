@@ -391,14 +391,17 @@ let help _ man_format topic commands = match topic with
     let topics = List.rev_append (List.rev_map fst pages) topics in
     let topics = List.rev_append ("topics" :: "w.map" :: commands) topics in
     let topics = List.sort compare topics in
-    let conv, _ = Cmdliner.Arg.enum (List.rev_map (fun s -> (s, s)) topics) in
+    let conv =
+      Cmdliner.Arg.conv_parser @@
+      Cmdliner.Arg.enum (List.rev_map (fun s -> (s, s)) topics)
+    in
     match conv topic with
-    | `Error e -> `Error (false, e)
-    | `Ok t when t = "topics" ->
+    | Error (`Msg e) -> `Error (false, e)
+    | Ok t when t = "topics" ->
 	      `Ok (C.out_v "-" (Fmt.pp_list Fmt.pp_str) topics)
-    | `Ok t when List.mem t commands ->
+    | Ok t when List.mem t commands ->
 	      `Help (man_format, Some t)
-    | `Ok t ->
+    | Ok t ->
 	      match (try `Ok (List.assoc t pages) with Not_found -> man_of_format t)
 	      with `Error _ as e -> e
 	      | `Ok p -> `Ok
@@ -421,8 +424,8 @@ let man = [
   `P "$(b,webglue)(1)"; ]
 
 let cmd =
-  Cmd.v (Cmd.info "help" ~sdocs:C.copts_sec ~doc ~man)
-    Term.(ret (const help $ C.copts $ Arg.man_format $ topic $ Term.choice_names))
+  Cmd.v (Cmd.info "help" ~sdocs:C.copts_sec ~doc ~man) @@
+  Term.(ret (const help $ C.copts $ Arg.man_format $ topic $ Term.choice_names))
 
 (*---------------------------------------------------------------------------
    Copyright (c) 2011 Daniel C. Bünzli
