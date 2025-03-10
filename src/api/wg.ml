@@ -1223,7 +1223,9 @@ module Wctx = struct
   with Exit -> [], d
 
  and eval_uuid c es d = try match es with
- | [] -> [Se.atom (Uuidm.to_string (Uuidm.v `V4))], d
+ | [] ->
+     let rand = Random.State.make_self_init () in
+     [Se.atom (Uuidm.to_string (Uuidm.v4_gen rand ()))], d
  | es ->
      let ns, es = eval_next Se.p_uuid c es d in
      let name, d = eval c es d in  (* TODO better error *)
@@ -1231,7 +1233,7 @@ module Wctx = struct
      | "" -> Wlog.err (err_eval_uuid_name d) ; raise Exit
      | n -> n
      in
-     [Se.atom (Uuidm.to_string (Uuidm.v (`V5 (ns, name))))], d
+     [Se.atom (Uuidm.to_string (Uuidm.v5 ns name))], d
  with Exit -> [], d
 end
 
